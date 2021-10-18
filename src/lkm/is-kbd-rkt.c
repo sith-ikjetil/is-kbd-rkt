@@ -24,28 +24,19 @@ MODULE_LICENSE("GPL");
 MODULE_VERSION("1.2");
 
 //
-// #define
-//
-#define DEVICE_NAME 	"iskbdrkt"
-#define CLASS_NAME 		"kernel"
-#define IOCTL_MAGIC 	0x70
-#define IOCTL_GET_INFO	_IOW(IOCTL_MAGIC, 0, char *) 
-
-//
 // function prototypes
 //
-static int device_open(struct inode *, struct file *);
-static int device_release(struct inode *, struct file *);
+//static int device_open(struct inode *, struct file *);
+//static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
-long int device_ioctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param);
+//static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
 static int GatherData(IS_KEYBOARD_RKT_DATA* p);
 
 //
 // static variables
 //
 static int major_num;
-static int device_open_count = 0;
+//static int device_open_count = 0;
 static struct class* char_class = NULL;
 static struct device* char_device = NULL;
 
@@ -54,42 +45,59 @@ static struct device* char_device = NULL;
 //
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
+	if ( len == sizeof(IS_KEYBOARD_RKT_DATA) ) {
+		struct IS_KEYBOARD_RKT_DATA data;
+		const int cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
+		char* ptr = (char*)&data;
+		int i = 0;
+
+		GatherData(&data);
+
+		for ( i = 0; i < cbSize; i++ )
+		{
+			put_user(*ptr, (char*)(buffer+i));
+			ptr++;
+		}
+
+		return cbSize;
+	}
+
     return 0;
 }
 
 //
 // device write
 //
-static ssize_t device_write(struct file *file, const char *buffer, size_t len, loff_t *offset) 
-{
-    return 0;
-}
+//static ssize_t device_write(struct file *file, const char *buffer, size_t len, loff_t *offset) 
+//{
+//   return 0;
+//}
 
 //
 // device open
 //
-static int device_open(struct inode *inode, struct file *file) 
-{
-    if ( device_open_count ) {
-        return -EBUSY;
-    }
+//static int device_open(struct inode *inode, struct file *file) 
+//{
+//    if ( device_open_count ) {
+//        return -EBUSY;
+//    }
 
-    device_open_count++;
-	try_module_get(THIS_MODULE);
+//    device_open_count++;
+//	try_module_get(THIS_MODULE);
     
-	return 0;
-}
+//	return 0;
+//}
 
 //
 // device_release
 //
-static int device_release(struct inode *inode, struct file *file) 
-{
-    device_open_count--;
-    module_put(THIS_MODULE);
-    
-	return 0;
-}
+//static int device_release(struct inode *inode, struct file *file) 
+//{
+//   device_open_count--;
+//    module_put(THIS_MODULE);
+//    
+//	return 0;
+//}
 
 //
 // GatherData
@@ -105,39 +113,14 @@ static int GatherData(IS_KEYBOARD_RKT_DATA* p)
 }
 
 //
-// device_ioctl
-//
-long int device_ioctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param)
-{
-	if ( ioctl_num == IOCTL_GET_INFO ) {
-		struct IS_KEYBOARD_RKT_DATA data;
-		char* ptr = (char*)&data;
-		int i = 0;
-
-		if (!GatherData(&data)) {
-			return -1;
-		}
-
-		for ( i = 0; i < sizeof(IS_KEYBOARD_RKT_DATA); i++ )
-		{
-			put_user(*ptr, (char*)(ioctl_param+i));
-			ptr++;
-		}
-	}
-
-	return 0;
-}
-
-//
 // file_operations
 //
 static struct file_operations file_ops = {
 	.owner = THIS_MODULE,
     .read = device_read,
-    .write = device_write,
-    .open = device_open,
-    .release = device_release,
-    .unlocked_ioctl = device_ioctl,
+//    .write = device_write,
+//    .open = device_open,
+//    .release = device_release,
 };
 
 //

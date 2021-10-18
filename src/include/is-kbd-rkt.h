@@ -7,8 +7,8 @@
 //
 // #ifndef
 //
-#ifndef __ISKBDRKT_H__
-#define __ISKBDRKT_H__
+#ifndef __IS_KBD_RKT_H__
+#define __IS_KBD_RKT_H__
 
 //
 // #define
@@ -18,6 +18,8 @@
 #define APIC_MASK				0xFFFFF000
 #define IO_APIC_IRQ_COUNT		24
 #define IOTRn_COUNT				4
+#define DEVICE_NAME 	        "iskbdrkt"
+#define CLASS_NAME 		        "kernel"
 
 //
 // #endif
