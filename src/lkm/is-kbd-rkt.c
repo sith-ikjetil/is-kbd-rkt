@@ -1,41 +1,202 @@
-/*
- * ch4/helloworld_lkm/helloworld_lkm.c
- ***************************************************************
- * This program is part of the source code released for the book
- *  "Linux Kernel Programming"
- *  (c) Author: Kaiwan N Billimoria
- *  Publisher:  Packt
- *  GitHub repository:
- *  https://github.com/PacktPublishing/Linux-Kernel-Programming
- *
- * From: Ch 4: Writing your First Kernel Module - LKMs Part 1
- ****************************************************************
- * Brief Description:
- * Our very first kernel module, the 'Hello, world' of course! The
- * idea being to explain the essentials of the Linux kernel's LKM
- * framework.
- *
- * For details, please refer the book, Ch 4.
- */
+//////////////////////////////////////////////////////////////
+//: Filename    : is-kbd-rkt.c
+//: Date        : 2021-10-18
+//: Author      : "Kjetil Kristoffer Solberg" <post@ikjetil.no>
+//: Version     : 1.2
+//: Description : A Linux Kernel Module that detects an SMM keyboard rootkit.
+//
+// #include
+//
+#include "../include/is-kbd-rkt.h"
+#include "../include/is-kbd-rkt-data.h"
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/device.h>
+#include <linux/fs.h>
 
-MODULE_AUTHOR("<insert your name here>");
-MODULE_DESCRIPTION("LKP book:ch4/helloworld_lkm: hello, world, our first LKM");
-MODULE_LICENSE("Dual MIT/GPL");
-MODULE_VERSION("0.1");
+//
+// MODULE metadata
+//
+MODULE_AUTHOR("Kjetil Kristoffer Solberg <post@ikjetil.no>");
+MODULE_DESCRIPTION("Linux Kernel Module for detecting SMM keyboard rootkit");
+MODULE_LICENSE("GPL");
+MODULE_VERSION("1.2");
 
-static int __init helloworld_lkm_init(void)
+//
+// #define
+//
+#define DEVICE_NAME 	"iskbdrkt"
+#define CLASS_NAME 		"kernel"
+#define IOCTL_MAGIC 	0x70
+#define IOCTL_GET_INFO	_IOW(IOCTL_MAGIC, 0, char *) 
+
+//
+// function prototypes
+//
+static int device_open(struct inode *, struct file *);
+static int device_release(struct inode *, struct file *);
+static ssize_t device_read(struct file *, char *, size_t, loff_t *);
+static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
+long int device_ioctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param);
+static int GatherData(IS_KEYBOARD_RKT_DATA* p);
+
+//
+// static variables
+//
+static int major_num;
+static int device_open_count = 0;
+static struct class* char_class = NULL;
+static struct device* char_device = NULL;
+
+//
+// device read
+//
+static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
 {
-	printk(KERN_INFO "Hello, world\n");
-	return 0;		/* success */
+    return 0;
 }
 
-static void __exit helloworld_lkm_exit(void)
+//
+// device write
+//
+static ssize_t device_write(struct file *file, const char *buffer, size_t len, loff_t *offset) 
 {
-	printk(KERN_INFO "Goodbye, world\n");
+    return 0;
 }
 
-module_init(helloworld_lkm_init);
-module_exit(helloworld_lkm_exit);
+//
+// device open
+//
+static int device_open(struct inode *inode, struct file *file) 
+{
+    if ( device_open_count ) {
+        return -EBUSY;
+    }
+
+    device_open_count++;
+	try_module_get(THIS_MODULE);
+    
+	return 0;
+}
+
+//
+// device_release
+//
+static int device_release(struct inode *inode, struct file *file) 
+{
+    device_open_count--;
+    module_put(THIS_MODULE);
+    
+	return 0;
+}
+
+//
+// GatherData
+//
+static int GatherData(IS_KEYBOARD_RKT_DATA* p)
+{
+	memset((void*)p, 0, sizeof(IS_KEYBOARD_RKT_DATA));
+
+	p->cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
+	strcpy(p->szErrorMessage, "Hello World from Kjetil Kristoffer Solberg");
+
+	return 0;
+}
+
+//
+// device_ioctl
+//
+long int device_ioctl(struct file *file, unsigned int ioctl_num, unsigned long ioctl_param)
+{
+	if ( ioctl_num == IOCTL_GET_INFO ) {
+		struct IS_KEYBOARD_RKT_DATA data;
+		char* ptr = (char*)&data;
+		int i = 0;
+
+		if (!GatherData(&data)) {
+			return -1;
+		}
+
+		for ( i = 0; i < sizeof(IS_KEYBOARD_RKT_DATA); i++ )
+		{
+			put_user(*ptr, (char*)(ioctl_param+i));
+			ptr++;
+		}
+	}
+
+	return 0;
+}
+
+//
+// file_operations
+//
+static struct file_operations file_ops = {
+	.owner = THIS_MODULE,
+    .read = device_read,
+    .write = device_write,
+    .open = device_open,
+    .release = device_release,
+    .unlocked_ioctl = device_ioctl,
+};
+
+//
+// LKM init method
+//
+static int __init is_kbd_rtk_init(void)
+{
+    //
+	// register char device
+	//
+    major_num = register_chrdev(0, DEVICE_NAME, &file_ops);
+    if ( major_num < 0 ) {
+        printk(KERN_ALERT DEVICE_NAME ": error registering device: %d\n", major_num );
+        return major_num;
+    } 
+    printk(KERN_INFO DEVICE_NAME ": lkm loaded with device major number %d\n", major_num);
+
+    //
+	// register device class
+	//
+    char_class = class_create(THIS_MODULE,CLASS_NAME);
+    if ( IS_ERR(char_class) ) {
+        unregister_chrdev(major_num, DEVICE_NAME);
+		printk(KERN_ALERT DEVICE_NAME ": error registering device class\n");
+		return PTR_ERR(char_class);
+    }
+    printk(KERN_INFO DEVICE_NAME ": class registered successfully\n");
+
+    //
+	// register device deriver
+	//
+    char_device = device_create(char_class, NULL, MKDEV(major_num, 0), NULL, DEVICE_NAME);
+    if (IS_ERR(char_device)){
+        class_destroy(char_class);
+		unregister_chrdev(major_num, DEVICE_NAME);
+		printk(KERN_ALERT DEVICE_NAME "error creating device\n");
+		return PTR_ERR(char_device);
+    }
+    printk(KERN_INFO DEVICE_NAME ": device class created correctly\n");
+    
+	//
+	// return success
+	//
+	return 0;
+}
+
+//
+// LKM exit method
+//
+static void __exit is_kbd_rtk_exit(void)
+{
+	device_destroy(char_class, MKDEV(major_num, 0));
+    class_unregister(char_class);
+    unregister_chrdev(major_num, DEVICE_NAME);
+    printk(KERN_INFO DEVICE_NAME ": module unloaded\n");
+}
+
+//
+// LKM init and exit methods
+//
+module_init(is_kbd_rtk_init);
+module_exit(is_kbd_rtk_exit);

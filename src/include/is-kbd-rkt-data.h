@@ -13,20 +13,20 @@
 //
 // #include
 //
-#include "IsKbdRkt.h"
+#include "is-kbd-rkt.h"
 
 //
 // Main Transfer Data
 //
 typedef struct IS_KEYBOARD_RKT_DATA {
-	uint16_t		cbSize;						// Size of Structure.
-	uint32_t		dwRootComplexBaseAddress;	// Root Complex Base Address Register
-	uint32_t		dwApicBaseAddress;			// Apic Base Address
-	uint32_t		dwIoApicBaseAddress;		// IO Apic Base Address
-	uint64_t 		qwIOTRn[IOTRn_COUNT];					// IOTR0 Chipset Configuration Register
-	uint64_t 		qwIOAPIC_REDTBL[IO_APIC_IRQ_COUNT];		// IOAPIC IRQ0
-	int32_t			ntStatusCode;							// Driver NTSTATUS Error Code
-	char			szErrorMessage[MAX_STRING_BUFFER_SIZE];	// Driver ERROR MESSAGE
+	unsigned short		cbSize;						// Size of Structure.
+	unsigned int		dwRootComplexBaseAddress;	// Root Complex Base Address Register
+	unsigned int		dwApicBaseAddress;			// Apic Base Address
+	unsigned int		dwIoApicBaseAddress;		// IO Apic Base Address
+	unsigned long long 	qwIOTRn[IOTRn_COUNT];					// IOTR0 Chipset Configuration Register
+	unsigned long long 	qwIOAPIC_REDTBL[IO_APIC_IRQ_COUNT];		// IOAPIC IRQ0
+	int					ntStatusCode;							// Driver NTSTATUS Error Code
+	char				szErrorMessage[MAX_STRING_BUFFER_SIZE];	// Driver ERROR MESSAGE
 } IS_KEYBOARD_RKT_DATA, *PIS_KEYBOARD_RKT_DATA;
 
 //
