@@ -19,7 +19,7 @@
 #define IO_APIC_IRQ_COUNT		24
 #define IOTRn_COUNT				4
 #define DEVICE_NAME 	        "iskbdrkt"
-#define CLASS_NAME 		        "kernel"
+#define CLASS_NAME 		        "iskbdrkt"
 #define RCBA_CHUNK_SIZE         0x2000
 #define APIC_CHUNK_SIZE         0x1000
 #define IRQ_APIC_KEYBOARD       0x1

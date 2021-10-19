@@ -36,6 +36,7 @@ MODULE_VERSION("1.2");
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 static u32 GetRootComplexBaseAddress(void);
 static void GatherData(IS_KEYBOARD_RKT_DATA* p);
+static char *iskbdrkt_devnode(struct device *dev, umode_t *mode);
 
 //
 // static variables
@@ -163,6 +164,19 @@ static struct file_operations file_ops = {
 };
 
 //
+// iskbdrkt_devnode
+//
+static char *iskbdrkt_devnode(struct device *dev, umode_t *mode)
+{
+	if (!mode)
+		return NULL;
+	
+	*mode = 0444;
+	
+	return NULL;
+}
+
+//
 // LKM init method
 //
 static int __init is_kbd_rtk_init(void)
@@ -187,6 +201,8 @@ static int __init is_kbd_rtk_init(void)
 		return PTR_ERR(char_class);
     }
     printk(KERN_INFO DEVICE_NAME ": class registered successfully\n");
+
+	char_class->devnode = iskbdrkt_devnode;
 
     //
 	// register device deriver
