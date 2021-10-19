@@ -12,6 +12,7 @@
 #include "../include/itsoftware-linux.h"
 #include "../include/itsoftware-linux-core.h"
 #include <string>
+#include <sstream>
 #include <iostream>
 
 //
@@ -23,6 +24,7 @@
 // using
 //
 using std::string;
+using std::stringstream;
 using std::cout;
 using std::setw;
 using std::setfill;
@@ -72,7 +74,8 @@ int main(int argc, const char* argv[])
 //
 void PrintHeader()
 {
-    cout << setw(80) << setfill('#') << std::left << "## Is Keyboard Rootkitted UI App " << endl;
+    cout << setw(80) << setfill('#') << std::left << "#" << endl;
+    cout << setw(80) << setfill('#') << std::left << "## Is Keyboard Rootkitted App " << endl;
     cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
     cout << "## Version : " << VERSION_INFO << endl;
     cout << "##" << endl;
@@ -83,24 +86,39 @@ void PrintHeader()
 //
 void PrintData(IS_KEYBOARD_RKT_DATA* p) 
 {
+    //
+    // Base address'
+    //
+    cout << setw(36) << setfill('#') << "## BASE ADDRESS' ##" << endl;
     cout << setfill(' ');
-    cout << setw(26) << std::left << "APIC Base Address" << ": " << p->dwApicBaseAddress << endl;
-    cout << setw(26) << std::left << "IO APIC Base Address" << ": " << p->dwIoApicBaseAddress << endl;
-    cout << setw(26) << std::left << "Root Complex Base Address" << ": " << p->dwRootComplexBaseAddress << endl;
+    cout << setw(16) << std::left << "APIC" << ": " << std::hex << std::showbase << p->dwApicBaseAddress << endl;
+    cout << setw(16) << std::left << "IO APIC" << ": " << std::hex << std::showbase << p->dwIoApicBaseAddress << endl;
+    cout << setw(16) << std::left << "Root Complex" << ": " << std::hex << std::showbase << p->dwRootComplexBaseAddress << endl;
+    
+    //
+    // IOTRn
+    //
+    cout << setw(36) << setfill('#') << "## IOTRn ##" << endl;
     for (int i = 0; i < IOTRn_COUNT; i++ ) { 
-        string s("IOTRn[");
-        s += std::to_string((i+1));
-        s += "]";
-        cout << setw(16) << std::left << s << ": " << p->qwIOTRn[i] << endl;
+        stringstream ss;
+        ss << "IOTRn[" << i << "]";
+        cout << setfill(' ') << setw(16) << std::left << ss.str() << ": " << std::hex << std::showbase << p->qwIOTRn[i] << endl;
     }
+    
+    //
+    // IOAPIC_IRQn
+    //
+    cout << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;
     for (int i = 0; i < IO_APIC_IRQ_COUNT; i++ ) {
-        string s("IOAPIC_IRQn[");
-        s += std::to_string((i+1));
-        s += "]";
-        cout << setw(16) << std::left << s << ": " << p->qwIOAPIC_REDTBL[i] << endl;
+        stringstream ss;
+        ss << "IOAPIC_IRQn[" << i << "]";
+        cout << setfill(' ') <<setw(16) << std::left << ss.str() << ": " << std::hex << std::showbase << p->qwIOAPIC_REDTBL[i] << endl;
     }
-    cout << setw(16) << std::left << "ErrorMessage" << ": " << p->szErrorMessage << endl;
+    cout << setfill(' ') <<setw(16) << std::left << "ErrorMessage" << ": " << p->szErrorMessage << endl;
 
+    //
+    // Conclution
+    //
     PrintConclution(p);
 }
 

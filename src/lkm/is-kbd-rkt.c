@@ -14,7 +14,7 @@
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/fs.h>
-#include <asm-generic/iomap.h>
+#include <linux/ioport.h>
 #include <linux/pci.h>
 
 //
@@ -96,6 +96,15 @@ _retry:
 //
 static void GatherData(IS_KEYBOARD_RKT_DATA* p)
 {
+	u32 __iomem *pIOTR0;
+	u32 __iomem *pIOTR1;
+	u32 __iomem *pIOTR2;
+	u32 __iomem *pIOTR3;
+	int i = 0;
+	int irq = 0;
+	u32 __iomem *pApicIoRegSel;
+	u32 __iomem *pApicIoWin;
+
 	memset((void*)p, 0, sizeof(IS_KEYBOARD_RKT_DATA));
 	p->cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
 
@@ -108,27 +117,41 @@ static void GatherData(IS_KEYBOARD_RKT_DATA* p)
 	p->dwRootComplexBaseAddress = GetRootComplexBaseAddress();
 	if ( p->dwRootComplexBaseAddress == 0 ) {
 		strcpy(p->szErrorMessage, "Invalid Root Complex Base Address");
+		return;
 	}
+	p->dwRootComplexBaseAddress &= RCBA_MASK;
 
 	//
 	// IRQTn
 	//
-	void* pmm = p->dwRootComplexBaseAddress + 0x1E80;
+	pIOTR0 = ioremap(p->dwRootComplexBaseAddress + 0x1E80, 8);
+	pIOTR1 = ioremap(p->dwRootComplexBaseAddress + 0x1E88, 8);
+	pIOTR2 = ioremap(p->dwRootComplexBaseAddress + 0x1E90, 8);
+	pIOTR3 = ioremap(p->dwRootComplexBaseAddress + 0x1E98, 8);
 
-	/*volatile u32* pIOTR0 = (u32*)((u64)p->dwRootComplexBaseAddress + 0x1E80);
-    volatile u32* pIOTR1 = (u32*)((u64)p->dwRootComplexBaseAddress + 0x1E88);
-    volatile u32* pIOTR2 = (u32*)((u64)p->dwRootComplexBaseAddress + 0x1E90);
-    volatile u32* pIOTR3 = (u32*)((u64)p->dwRootComplexBaseAddress + 0x1E98);
-*/
-    p->qwIOTRn[0] = *((u64*)pmm);//readl(pIOTR0);
-    /*p->qwIOTRn[0] |= ((u64)(*(pIOTR0 + 1) << 32));
-    p->qwIOTRn[1] = *pIOTR1;
-    p->qwIOTRn[1] |= ((u64)(*(pIOTR1 + 1) << 32));
-    p->qwIOTRn[2] = *pIOTR2;
-    p->qwIOTRn[2] |= ((u64)(*(pIOTR2 + 1) << 32));
-    p->qwIOTRn[3] = *pIOTR3;
-    p->qwIOTRn[3] |= ((u64)(*(pIOTR3 + 1) << 32));
-*/
+	p->qwIOTRn[0] = readq(pIOTR0);
+	p->qwIOTRn[1] = readq(pIOTR1);
+	p->qwIOTRn[2] = readq(pIOTR2);
+	p->qwIOTRn[3] = readq(pIOTR3);
+	
+	//
+	// IOAPIC
+	//
+	//p->dwApicBaseAddress = GetApicBaseAddress();
+	p->dwIoApicBaseAddress = IO_APIC_BASE_ADDRESS;
+
+	pApicIoRegSel = ioremap(p->dwIoApicBaseAddress,4);
+    pApicIoWin = ioremap(p->dwIoApicBaseAddress + 0x10, 4);
+
+	for (i = 0, irq = 0x10; i < IO_APIC_IRQ_COUNT && irq <= 0x3E; i++, irq += 2)
+    {
+		writel(irq, pApicIoRegSel);
+		p->qwIOAPIC_REDTBL[i] = readl(pApicIoWin);
+
+		writel(irq+1, pApicIoRegSel);
+		p->qwIOAPIC_REDTBL[i] |= ((u64)readl(pApicIoWin) << 32);
+   }
+
 }
 
 //
