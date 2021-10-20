@@ -16,6 +16,7 @@
 #include <linux/fs.h>
 #include <linux/ioport.h>
 #include <linux/pci.h>
+#include <asm/msr.h>
 
 //
 // MODULE metadata
@@ -34,8 +35,9 @@ MODULE_VERSION("1.2");
 // function prototypes
 //
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-static u32 GetRootComplexBaseAddress(void);
-static void GatherData(IS_KEYBOARD_RKT_DATA* p);
+static u32 get_rcba(void);
+static u64 get_apicba(void);
+static void gather_data(IS_KEYBOARD_RKT_DATA* p);
 static char *iskbdrkt_devnode(struct device *dev, umode_t *mode);
 
 //
@@ -56,7 +58,7 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
 		char* ptr = (char*)&data;
 		int i = 0;
 
-		GatherData(&data);
+		gather_data(&data);
 
 		for ( i = 0; i < cbSize; i++ )
 		{
@@ -71,9 +73,11 @@ static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *
 }
 
 //
-// GetRootComplexBaseAddress
+// Function: get_rcba
 //
-static u32 GetRootComplexBaseAddress(void)
+// (i): Gets root complex base address. 
+//
+static u32 get_rcba(void)
 {
 	struct pci_dev *dev = NULL;
 	u32 rcba;
@@ -89,13 +93,28 @@ _retry:
 		}
 	}
 	
+	rcba &= RCBA_MASK;
+
 	return rcba;
 }
 
 //
-// GatherData
+// Function: get_apicba
 //
-static void GatherData(IS_KEYBOARD_RKT_DATA* p)
+// (i): get apic base address
+//
+static u64 get_apicba(void)
+{
+	u64 apicba = __rdmsr(0x1B);
+	return apicba;
+}
+
+//
+// Function: gather_data
+//
+// (i): Gathers and fills IS_KEYBOARD_RKT_DATA structure.
+//
+static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 {
 	u32 __iomem *pIOTR0;
 	u32 __iomem *pIOTR1;
@@ -109,18 +128,14 @@ static void GatherData(IS_KEYBOARD_RKT_DATA* p)
 	memset((void*)p, 0, sizeof(IS_KEYBOARD_RKT_DATA));
 	p->cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
 
-	//unsigned short PCI_CONFIGURATION_SPACE_ADDRESS_PORT	= 0x0cf8;// Configuration Space Address 
-	//unsigned short PCI_CONFIGURATION_SPACE_DATA_PORT	= 0x0cfc;// Configuration Space Data 
-
 	//
 	// RCBA
 	//
-	p->dwRootComplexBaseAddress = GetRootComplexBaseAddress();
+	p->dwRootComplexBaseAddress = get_rcba();
 	if ( p->dwRootComplexBaseAddress == 0 ) {
 		strcpy(p->szErrorMessage, "Invalid Root Complex Base Address");
 		return;
 	}
-	p->dwRootComplexBaseAddress &= RCBA_MASK;
 
 	//
 	// IRQTn
@@ -138,7 +153,7 @@ static void GatherData(IS_KEYBOARD_RKT_DATA* p)
 	//
 	// IOAPIC
 	//
-	//p->dwApicBaseAddress = GetApicBaseAddress();
+	p->dwApicBaseAddress = get_apicba();
 	p->dwIoApicBaseAddress = IO_APIC_BASE_ADDRESS;
 
 	pApicIoRegSel = ioremap(p->dwIoApicBaseAddress,4);
@@ -152,7 +167,6 @@ static void GatherData(IS_KEYBOARD_RKT_DATA* p)
 		writel(irq+1, pApicIoRegSel);
 		p->qwIOAPIC_REDTBL[i] |= ((u64)readl(pApicIoWin) << 32);
    }
-
 }
 
 //
