@@ -16,7 +16,7 @@ When you want to, remove the kernel object from the kernel with:
 sudo rmmod is-kbd-rkt
 ```
 
-Build the application int the app directory with build-debug.sh.
+Build the application in the app directory with build-debug.sh.
 ```bash
 ./build-debug.sh
 ```
