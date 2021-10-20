@@ -18,7 +18,7 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.3"
+#define VERSION_INFO   "1.4"
 #define MAX_N           1'000
 #define MIN_N           1
 #define DEFAULT_N       50
@@ -254,16 +254,16 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
 // (i): Process data and set result.
 //
 bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
-{
+{ 
     // IOTR0
-    if (p->qwIOTRn[0] == 0x61)
+    if (((uint32_t)p->qwIOTRn[0]) == 0x61)
     {
         r->bHitIOTR0 = true;
         r->wHitPortIOTR0 = 0x60;
         r->qwHitIOTR0 = p->qwIOTRn[0];
     }
 
-    if (p->qwIOTRn[0] == 0x65)
+    if (((uint32_t)p->qwIOTRn[0]) == 0x65)
     {
         r->bHitIOTR0 = true;
         r->wHitPortIOTR0 = 0x64;
@@ -271,14 +271,14 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
     }
 
     // IOTR1
-    if (p->qwIOTRn[1] == 0x61)
+    if (((uint32_t)p->qwIOTRn[1]) == 0x61)
     {
         r->bHitIOTR1 = true;
         r->wHitPortIOTR1 = 0x60;
         r->qwHitIOTR1 = p->qwIOTRn[1];
     }
 
-    if (p->qwIOTRn[1] == 0x65)
+    if (((uint32_t)p->qwIOTRn[1]) == 0x65)
     {
         r->bHitIOTR1 = true;
         r->wHitPortIOTR1 = 0x64;
@@ -286,14 +286,14 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
     }
 
     // IOTR2
-    if (p->qwIOTRn[2] == 0x61)
+    if (((uint32_t)p->qwIOTRn[2]) == 0x61)
     {
         r->bHitIOTR2 = true;
         r->wHitPortIOTR2 = 0x60;
         r->qwHitIOTR2 = p->qwIOTRn[2];
     }
 
-    if (p->qwIOTRn[2] == 0x65)
+    if (((uint32_t)p->qwIOTRn[2]) == 0x65)
     {
         r->bHitIOTR2 = true;
         r->wHitPortIOTR2 = 0x64;
@@ -301,14 +301,14 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
     }
 
     // IOTR3
-    if (p->qwIOTRn[3] == 0x61)
+    if (((uint32_t)p->qwIOTRn[3]) == 0x61)
     {
         r->bHitIOTR3 = true;
         r->wHitPortIOTR3 = 0x60;
         r->qwHitIOTR3 = p->qwIOTRn[3];
     }
 
-    if (p->qwIOTRn[3] == 0x65)
+    if (((uint32_t)p->qwIOTRn[3]) == 0x65)
     {
         r->bHitIOTR3 = true;
         r->wHitPortIOTR3 = 0x64;
@@ -332,19 +332,19 @@ void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r) {
 
     bool bSmiHandlerFound(false);
     if (r->bHitIOTR0) {
-        cout << "Keyboard Is Trapped by SMI Handler on IOTR0 I/O Address(IOAD) 0x" << std::hex << std::uppercase << r->qwHitIOTR0 << endl;
+        cout << "Keyboard Is Trapped by SMI Handler on IOTR0 port " << std::hex << std::showbase << r->wHitPortIOTR0 << endl;
         bSmiHandlerFound = true;
     }
     if (r->bHitIOTR1) {
-        cout << "Keyboard Is Trapped by SMI Handler on IOTR1 I/O Address(IOAD) 0x" << std::hex << std::uppercase << r->qwHitIOTR1 << endl;
+        cout << "Keyboard Is Trapped by SMI Handler on IOTR1 port " << std::hex << std::showbase << r->wHitPortIOTR1 << endl;
         bSmiHandlerFound = true;
     }
     if (r->bHitIOTR2) {
-        cout << "Keyboard Is Trapped by SMI Handler on IOTR2 I/O Address(IOAD) 0x" << std::hex << std::uppercase << r->qwHitIOTR2 << endl;
+        cout << "Keyboard Is Trapped by SMI Handler on IOTR2 port " << std::hex << std::showbase << r->wHitPortIOTR2 << endl;
         bSmiHandlerFound = true;
     }
     if (r->bHitIOTR3) {
-        cout << "Keyboard Is Trapped by SMI Handler on IOTR3 I/O Address(IOAD) 0x" << std::hex << std::uppercase << r->qwHitIOTR3 << endl;
+        cout << "Keyboard Is Trapped by SMI Handler on IOTR3 port " << std::hex << std::showbase << r->wHitPortIOTR3 << endl;
         bSmiHandlerFound = true;
     }
     if (r->bHitIoApicIRQ1) {
