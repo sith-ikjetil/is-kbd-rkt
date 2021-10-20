@@ -16,6 +16,7 @@
 #include <linux/fs.h>
 #include <linux/ioport.h>
 #include <linux/pci.h>
+#include <linux/string.h>
 #include <asm/msr.h>
 
 //
@@ -137,7 +138,7 @@ static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 	//
 	p->dwRootComplexBaseAddress = get_rcba();
 	if ( p->dwRootComplexBaseAddress == 0 ) {
-		strcpy(p->szErrorMessage, "Invalid Root Complex Base Address");
+		strncpy(p->szErrorMessage, "Invalid Root Complex Base Address", MAX_STRING_BUFFER_SIZE);
 		return;
 	}
 
