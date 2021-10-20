@@ -24,7 +24,7 @@
 MODULE_AUTHOR("Kjetil Kristoffer Solberg <post@ikjetil.no>");
 MODULE_DESCRIPTION("Linux Kernel Module for detecting SMM keyboard rootkit");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.2");
+MODULE_VERSION("1.3");
 
 //
 // #define
@@ -116,10 +116,14 @@ static u64 get_apicba(void)
 //
 static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 {
-	u32 __iomem *pIOTR0;
-	u32 __iomem *pIOTR1;
-	u32 __iomem *pIOTR2;
-	u32 __iomem *pIOTR3;
+	u32 __iomem *pIOTR0_1;
+	u32 __iomem *pIOTR0_2;
+	u32 __iomem *pIOTR1_1;
+	u32 __iomem *pIOTR1_2;
+	u32 __iomem *pIOTR2_1;
+	u32 __iomem *pIOTR2_2;
+	u32 __iomem *pIOTR3_1;
+	u32 __iomem *pIOTR3_2;
 	int i = 0;
 	int irq = 0;
 	u32 __iomem *pApicIoRegSel;
@@ -140,15 +144,23 @@ static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 	//
 	// IRQTn
 	//
-	pIOTR0 = ioremap(p->dwRootComplexBaseAddress + 0x1E80, 8);
-	pIOTR1 = ioremap(p->dwRootComplexBaseAddress + 0x1E88, 8);
-	pIOTR2 = ioremap(p->dwRootComplexBaseAddress + 0x1E90, 8);
-	pIOTR3 = ioremap(p->dwRootComplexBaseAddress + 0x1E98, 8);
+	pIOTR0_1 = ioremap(p->dwRootComplexBaseAddress + 0x1E80, 4);
+	pIOTR0_2 = ioremap(p->dwRootComplexBaseAddress + 0x1E84, 4);
+	pIOTR1_1 = ioremap(p->dwRootComplexBaseAddress + 0x1E88, 4);
+	pIOTR1_2 = ioremap(p->dwRootComplexBaseAddress + 0x1E8C, 4);
+	pIOTR2_1 = ioremap(p->dwRootComplexBaseAddress + 0x1E90, 4);
+	pIOTR2_2 = ioremap(p->dwRootComplexBaseAddress + 0x1E94, 4);
+	pIOTR3_1 = ioremap(p->dwRootComplexBaseAddress + 0x1E98, 4);
+	pIOTR3_2 = ioremap(p->dwRootComplexBaseAddress + 0x1E9C, 4);
 
-	p->qwIOTRn[0] = readq(pIOTR0);
-	p->qwIOTRn[1] = readq(pIOTR1);
-	p->qwIOTRn[2] = readq(pIOTR2);
-	p->qwIOTRn[3] = readq(pIOTR3);
+	p->qwIOTRn[0] = readl(pIOTR0_1);
+	p->qwIOTRn[0] |= ((u64)readl(pIOTR0_2) << 32);
+	p->qwIOTRn[1] = readl(pIOTR1_1);
+	p->qwIOTRn[1] |= ((u64)readl(pIOTR1_2) << 32);
+	p->qwIOTRn[2] = readl(pIOTR2_1);
+	p->qwIOTRn[2] |= ((u64)readl(pIOTR2_2) << 32);
+	p->qwIOTRn[3] = readl(pIOTR3_1);
+	p->qwIOTRn[3] |= ((u64)readl(pIOTR3_2) << 32);
 	
 	//
 	// IOAPIC
@@ -156,15 +168,15 @@ static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 	p->dwApicBaseAddress = get_apicba();
 	p->dwIoApicBaseAddress = IO_APIC_BASE_ADDRESS;
 
-	pApicIoRegSel = ioremap(p->dwIoApicBaseAddress,4);
+	pApicIoRegSel = ioremap(p->dwIoApicBaseAddress,1);
     pApicIoWin = ioremap(p->dwIoApicBaseAddress + 0x10, 4);
 
 	for (i = 0, irq = 0x10; i < IO_APIC_IRQ_COUNT && irq <= 0x3E; i++, irq += 2)
     {
-		writel(irq, pApicIoRegSel);
+		writeb(irq, pApicIoRegSel);
 		p->qwIOAPIC_REDTBL[i] = readl(pApicIoWin);
 
-		writel(irq+1, pApicIoRegSel);
+		writeb(irq+1, pApicIoRegSel);
 		p->qwIOAPIC_REDTBL[i] |= ((u64)readl(pApicIoWin) << 32);
    }
 }

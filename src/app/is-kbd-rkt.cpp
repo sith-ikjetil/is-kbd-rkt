@@ -18,10 +18,10 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.2"
+#define VERSION_INFO   "1.3"
 #define MAX_N           1'000
 #define MIN_N           1
-#define DEFAULT_N       200
+#define DEFAULT_N       50
 
 //
 // using
@@ -200,7 +200,7 @@ void PrintHeader()
     cout << "## Version   : " << VERSION_INFO << endl;
     cout << "## Arguments : " << endl;
     cout << "##             -n <count> = Number of times to run the test." << endl;
-    cout << "##                          default = 200, max = 1'000, min = 1" << endl;
+    cout << "##                          default = 50, max = 1'000, min = 1" << endl;
     cout << "##             -v         = verbose output" << endl;
     cout << "##             --verbose  = verbose output" << endl;
     cout << "## Using     : " << endl;
@@ -231,7 +231,7 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
         for (int i = 0; i < IOTRn_COUNT; i++ ) { 
             stringstream ss;
             ss << "IOTRn[" << i << "]";
-            cout << setfill(' ') << setw(16) << std::left << ss.str() << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[i] << ((p->qwIOTRn[0] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
+            cout << setfill(' ') << setw(16) << std::left << ss.str() << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[i] << ((p->qwIOTRn[i] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
         }
         
         //
