@@ -199,13 +199,13 @@ void PrintHeader()
     cout << "## Author    : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
     cout << "## Version   : " << VERSION_INFO << endl;
     cout << "## Arguments : " << endl;
-    cout << "##             -n <count> = Number of times to run the test." << endl;
-    cout << "##                          default = 50, max = 1'000, min = 1" << endl;
-    cout << "##             -v         = verbose output" << endl;
-    cout << "##             --verbose  = verbose output" << endl;
+    cout << "##             -n <count>    = Number of times to run the test." << endl;
+    cout << "##                             (default = 50, max = 1'000, min = 1)" << endl;
+    cout << "##             -v, --verbose = verbose output" << endl;
+    cout << "##                             (default = false)" << endl;
     cout << "## Using     : " << endl;
-    cout << "##              n = " << g_n << endl;
-    cout << "##              v = " << ((g_verbose) ? "true" : "false") << endl;
+    cout << "##             -n            = " << g_n << endl;
+    cout << "##             --verbose     = " << ((g_verbose) ? "true" : "false") << endl;
     cout << "##" << endl;
 }
 
