@@ -46,7 +46,7 @@ Build the application in the app directory with build-debug.sh.
 
 Run the application,
 ```bash
-./iskbdrkt -v
+./iskbdrkt
 ```
 
 You need g++ to build the application. 
