@@ -25,7 +25,7 @@
 MODULE_AUTHOR("Kjetil Kristoffer Solberg <post@ikjetil.no>");
 MODULE_DESCRIPTION("Linux Kernel Module for detecting SMM keyboard rootkit");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.3");
+MODULE_VERSION("1.4");
 
 //
 // #define
@@ -138,7 +138,7 @@ static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 	//
 	p->dwRootComplexBaseAddress = get_rcba();
 	if ( p->dwRootComplexBaseAddress == 0 ) {
-		strncpy(p->szErrorMessage, "Invalid Root Complex Base Address", MAX_STRING_BUFFER_SIZE);
+		strscpy(p->szErrorMessage, "Invalid Root Complex Base Address", MAX_STRING_BUFFER_SIZE);
 		return;
 	}
 
