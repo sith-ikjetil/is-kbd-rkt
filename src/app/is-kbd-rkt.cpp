@@ -18,7 +18,7 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.41"
+#define VERSION_INFO   "1.42"
 #define MAX_N           1'000
 #define MIN_N           1
 #define DEFAULT_N       50
@@ -185,9 +185,9 @@ void PrintHeader()
     cout << setw(80) << setfill('#') << std::left << "## Is Keyboard Rootkitted App " << endl;
     cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
     cout << "## Version : " << VERSION_INFO << endl;
-    cout << "## Usage   : " << endl;
-    cout << "##           -n <count> = Number of times to run the test." << endl;
-    cout << "##                        (default = 50, max = 1'000, min = 1)" << endl;
+    //cout << "## Usage   : " << endl;
+    //cout << "##           -n <count> = Number of times to run the test." << endl;
+    //cout << "##                        (default = 50, max = 1'000, min = 1)" << endl;
     cout << "##" << endl;
 }
 
