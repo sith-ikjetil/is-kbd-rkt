@@ -1,5 +1,5 @@
 # is-kbd-rkt
-A Linux Kernel Module for detecting SMM keyboard rootkit. 
+A Linux Kernel Module with app for detecting SMM keyboard rootkit. 
  
 ## Example Output 
 ```bash
