@@ -80,7 +80,7 @@ int     g_n = DEFAULT_N;
 //
 int main(int argc, const char* argv[])
 {
-    UpdateN(argc, argv);
+    //UpdateN(argc, argv);
 
     PrintHeader();
 
@@ -212,7 +212,6 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
     cout << setfill(' ') << setw(16) << std::left << "IOTR1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[1] << ((p->qwIOTRn[1] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
     cout << setfill(' ') << setw(16) << std::left << "IOTR2" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[2] << ((p->qwIOTRn[2] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
     cout << setfill(' ') << setw(16) << std::left << "IOTR3" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[3] << ((p->qwIOTRn[3] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
-    
 
     //
     // IOAPIC_IRQn
@@ -220,7 +219,7 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
     cout << std::left << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;    
     cout << setfill(' ') <<setw(16) << std::left << "IO APIC IRQ1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOAPIC_REDTBL[1] << (((p->qwIOAPIC_REDTBL[1] & 0b1'0000'0000'0000'0000) == 0) ? " Interrupt Mask-bit NOT SET" : " Interrupt Mask-bit SET") << endl;
 
-    if ( strlen(p->szErrorMessage) > 0 ) {
+    if ( strnlen(p->szErrorMessage, MAX_STRING_BUFFER_SIZE) > 0 ) {
         cout << std::left << setw(36) << setfill('#') << "## ERROR MESSAGE ##" << endl;    
         cout << p->szErrorMessage << endl;
     }
