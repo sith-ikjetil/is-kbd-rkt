@@ -1,7 +1,7 @@
 # is-kbd-rkt
 A Linux Kernel Module for detecting SMM keyboard rootkit. 
  
-## Example Output
+## Example Output 
 ```bash
 ################################################################################
 ## Is Keyboard Rootkitted App ##################################################
@@ -23,6 +23,7 @@ IO APIC IRQ1    : 0x0000000000010000 Interrupt Mask-bit SET
 No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1
 ```
 
+## Details 
 Run make in the lkm directory to build the kernel object.
 ```bash
 make
