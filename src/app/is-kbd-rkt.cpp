@@ -18,7 +18,7 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.4"
+#define VERSION_INFO   "1.41"
 #define MAX_N           1'000
 #define MIN_N           1
 #define DEFAULT_N       50
@@ -67,13 +67,11 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p);
 void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r);
 bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
 void UpdateN(int argc, const char* argv[]);
-void UpdateVerbose(int argc, const char* argv[]);
 
 //
 // global data
 //
 int     g_n = DEFAULT_N;
-bool    g_verbose = false;
 
 //
 // Function: main
@@ -83,7 +81,6 @@ bool    g_verbose = false;
 int main(int argc, const char* argv[])
 {
     UpdateN(argc, argv);
-    UpdateVerbose(argc,argv);
 
     PrintHeader();
 
@@ -92,9 +89,9 @@ int main(int argc, const char* argv[])
 
     unique_file_descriptor file = open(deviceName.c_str(), O_RDONLY);
     if ( file.IsInvalid() ) {
-        cout << "Could not open: " << deviceName << endl;
+        cout << "Could not open device: " << deviceName << endl;
         cout << "Error: " << strerror(errno) << endl;
-        cout << "Have you checked if device exists?" << endl;
+        cout << "Have you checked that device exist?" << endl;
         return EXIT_FAILURE;
     }
 
@@ -180,32 +177,17 @@ void UpdateN(int argc, const char* argv[])
 }
 
 //
-// Function: UpdateVerbose
-//
-// (i): Updates g_verbose global variable.
-//
-void UpdateVerbose(int argc, const char* argv[]) 
-{
-    g_verbose = (GetHasArg("-v",argc,argv) || GetHasArg("--verbose", argc, argv));
-}
-
-//
 // print app ui header
 //
 void PrintHeader()
 {
     cout << setw(80) << setfill('#') << std::left << "#" << endl;
     cout << setw(80) << setfill('#') << std::left << "## Is Keyboard Rootkitted App " << endl;
-    cout << "## Author    : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
-    cout << "## Version   : " << VERSION_INFO << endl;
-    cout << "## Arguments : " << endl;
-    cout << "##             -n <count>    = Number of times to run the test." << endl;
-    cout << "##                             (default = 50, max = 1'000, min = 1)" << endl;
-    cout << "##             -v, --verbose = verbose output" << endl;
-    cout << "##                             (default = false)" << endl;
-    cout << "## Using     : " << endl;
-    cout << "##             -n            = " << g_n << endl;
-    cout << "##             --verbose     = " << ((g_verbose) ? "true" : "false") << endl;
+    cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
+    cout << "## Version : " << VERSION_INFO << endl;
+    cout << "## Usage   : " << endl;
+    cout << "##           -n <count> = Number of times to run the test." << endl;
+    cout << "##                        (default = 50, max = 1'000, min = 1)" << endl;
     cout << "##" << endl;
 }
 
@@ -222,29 +204,25 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
     cout << setfill(' ') << setw(16) << std::left << "IO APIC" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwIoApicBaseAddress << endl;
     cout << setfill(' ') << setw(16) << std::left << "Root Complex" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwRootComplexBaseAddress << endl;
     
-    if ( g_verbose ) 
-    {
-        //
-        // IOTRn
-        //
-        cout << std::left << setw(36) << setfill('#') << "## IOTRn ##" << endl;
-        for (int i = 0; i < IOTRn_COUNT; i++ ) { 
-            stringstream ss;
-            ss << "IOTRn[" << i << "]";
-            cout << setfill(' ') << setw(16) << std::left << ss.str() << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[i] << ((p->qwIOTRn[i] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
-        }
-        
-        //
-        // IOAPIC_IRQn
-        //
-        cout << std::left << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;
-        for (int i = 0; i < IO_APIC_IRQ_COUNT; i++ ) {
-            stringstream ss;
-            ss << "IOAPIC_IRQn[" << i << "]";
-            cout << setfill(' ') <<setw(16) << std::left << ss.str() << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOAPIC_REDTBL[i] << (((p->qwIOAPIC_REDTBL[i] & 0b1'0000'0000'0000'0000) == 0) ? " Interrupt Mask-bit NOT SET" : " Interrupt Mask-bit SET") << endl;
-        }
+    //
+    // IOTRn
+    //
+    cout << std::left << setw(36) << setfill('#') << "## IOTRn ##" << endl;
+    cout << setfill(' ') << setw(16) << std::left << "IOTR0" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[0] << ((p->qwIOTRn[0] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
+    cout << setfill(' ') << setw(16) << std::left << "IOTR1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[1] << ((p->qwIOTRn[1] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
+    cout << setfill(' ') << setw(16) << std::left << "IOTR2" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[2] << ((p->qwIOTRn[2] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
+    cout << setfill(' ') << setw(16) << std::left << "IOTR3" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[3] << ((p->qwIOTRn[3] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
+    
 
-        cout << setfill(' ') <<setw(16) << std::left << "ErrorMessage" << ": " << p->szErrorMessage << endl;
+    //
+    // IOAPIC_IRQn
+    //
+    cout << std::left << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;    
+    cout << setfill(' ') <<setw(16) << std::left << "IO APIC IRQ1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOAPIC_REDTBL[1] << (((p->qwIOAPIC_REDTBL[1] & 0b1'0000'0000'0000'0000) == 0) ? " Interrupt Mask-bit NOT SET" : " Interrupt Mask-bit SET") << endl;
+
+    if ( strlen(p->szErrorMessage) > 0 ) {
+        cout << std::left << setw(36) << setfill('#') << "## ERROR MESSAGE ##" << endl;    
+        cout << p->szErrorMessage << endl;
     }
 }
 
