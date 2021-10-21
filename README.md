@@ -1,4 +1,6 @@
 # is-kbd-rkt
+License: **GPL-3.0-or-later**  
+
 A Linux Kernel Module with app for detecting SMM keyboard rootkit. 
  
 ## Example Output 
