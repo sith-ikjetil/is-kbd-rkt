@@ -8,7 +8,7 @@ A Linux Kernel Module with app for detecting SMM keyboard rootkit.
 ################################################################################
 ## Is Keyboard Rootkitted App 
 ## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>
-## Version : 1.41
+## Version : 1.5
 ##
 ## BASE ADDRESS ####################
 APIC            : 0xfee00800
