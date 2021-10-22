@@ -2,8 +2,9 @@
 //: Filename    : is-kbd-rkt.cpp
 //: Date        : 2021-10-18
 //: Author      : "Kjetil Kristoffer Solberg" <post@ikjetil.no>
-//: Version     : 1.2
-//: Description : A Linux Kernel Module that detects an SMM keyboard rootkit.
+//: Version     : 1.6
+//: Description : Application that calls a Linux Kernel Module 
+//:               for detection of an SMM keyboard rootkit.
 //
 // #include
 //
@@ -18,7 +19,7 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.5"
+#define VERSION_INFO   "1.6"
 #define MAX_N           1'000
 #define MIN_N           1
 #define DEFAULT_N       50
@@ -40,6 +41,8 @@ using ItSoftware::Linux::Core::unique_file_descriptor;
 //
 // struct: IS_KEYBOARD_RKT_RESULT
 //
+// (i): data collected during ProcessResult function call
+//
 typedef struct IS_KEYBOARD_RKT_RESULT {
     bool bHitIOTR0;
     bool bHitIOTR1;
@@ -60,19 +63,28 @@ typedef struct IS_KEYBOARD_RKT_RESULT {
 } IS_KEYBOARD_RKT_RESULT, *PIS_KEYBOARD_RKT_RESULT;
 
 //
-// function prototypes
+// struct: AppSettings
 //
-void PrintHeader();
-void PrintData(IS_KEYBOARD_RKT_DATA* p);
-void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r);
-bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
-void UpdateN(int argc, const char* argv[]);
-void PrintError(string msg);
+// (i): application settings
+//
+typedef struct AppSettings 
+{
+    int argc;
+    const char** argv;
+    int n;
+} AppSettings, *LPAppSettings;
 
 //
-// global data
+// function prototypes
 //
-int     g_n = DEFAULT_N;
+void PrintHeader(AppSettings& settings);
+void PrintData(IS_KEYBOARD_RKT_DATA* p);
+void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r);
+void PrintError(string msg);
+bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
+void UpdateAppSettings(AppSettings& settings);
+string GetArgVal(string arg, int argc, const char* argv[]);
+bool GetHasArg(string arg, int argc, const char* argv[]);
 
 //
 // Function: main
@@ -81,9 +93,15 @@ int     g_n = DEFAULT_N;
 //
 int main(int argc, const char* argv[])
 {
-    //UpdateN(argc, argv);
+    AppSettings settings {
+        .argc = argc,
+        .argv = argv,
+        .n = DEFAULT_N,
+    };
 
-    PrintHeader();
+    UpdateAppSettings(settings);
+
+    PrintHeader(settings);
 
     string deviceName("/dev/");
     deviceName += DEVICE_NAME;
@@ -102,7 +120,7 @@ int main(int argc, const char* argv[])
     IS_KEYBOARD_RKT_RESULT  result{0};
     size_t bytesRead(0);
     bool bResult = false;
-    int n = g_n;
+    int n = settings.n;
     do
     {    
         auto size = read(file, static_cast<void*>(&data), sizeof(IS_KEYBOARD_RKT_DATA));
@@ -120,6 +138,8 @@ int main(int argc, const char* argv[])
     PrintData(&data);
 
     PrintConclusion(&result);
+
+    return EXIT_SUCCESS;
 }
 
 //
@@ -171,19 +191,23 @@ string GetArgVal(string arg, int argc, const char* argv[])
 //
 // (i): Updates g_n global variable.
 //
-void UpdateN(int argc, const char* argv[]) 
+void UpdateAppSettings(AppSettings& settings) 
 {
-    string newN = GetArgVal("-n", argc, argv);
+    //
+    // Update .n
+    //
+    string newN = GetArgVal("-n", settings.argc, settings.argv);
     if ( newN.size() > 0 ) {
         try
         {
-            g_n = ItsConvert::ToNumber<int>(ItsString::Replace(newN, "'", ""));
-            if (g_n > MAX_N ) {
-                g_n = MAX_N;
+            int nn = ItsConvert::ToNumber<int>(ItsString::Replace(newN, "'", ""));
+            if (nn > MAX_N ) {
+                nn = MAX_N;
             }
-            else if ( g_n < MIN_N) {
-                g_n = MIN_N;
+            else if ( nn < MIN_N) {
+                nn = MIN_N;
             }
+            settings.n = nn;
         }
         catch(const std::exception& e)
         {
@@ -195,15 +219,15 @@ void UpdateN(int argc, const char* argv[])
 //
 // print app ui header
 //
-void PrintHeader()
+void PrintHeader(AppSettings& settings)
 {
     cout << setw(80) << setfill('#') << std::left << "#" << endl;
     cout << setw(80) << setfill(' ') << std::left << "## Is Keyboard Rootkitted App " << endl;
     cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
     cout << "## Version : " << VERSION_INFO << endl;
-    //cout << "## Usage   : " << endl;
-    //cout << "##           -n <count> = Number of times to run the test." << endl;
-    //cout << "##                        (default = 50, max = 1'000, min = 1)" << endl;
+    cout << "## Usage   : " << endl;
+    cout << "##           -n " << settings.n << " = Number of times to run the test." << endl;
+    cout << "##           (default = 50, max = 1'000, min = 1)" << endl;
     cout << "##" << endl;
 }
 
