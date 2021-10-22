@@ -6,7 +6,7 @@ A Linux Kernel Module with app for detecting SMM keyboard rootkit.
 ## Example Output 
 ```bash
 ################################################################################
-## Is Keyboard Rootkitted App ##################################################
+## Is Keyboard Rootkitted App 
 ## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>
 ## Version : 1.41
 ##

@@ -52,7 +52,7 @@ static struct device* char_device = NULL;
 // device read
 //
 static ssize_t device_read(struct file *flip, char *buffer, size_t len, loff_t *offset)
-{
+{	
 	if ( len == sizeof(IS_KEYBOARD_RKT_DATA) ) {
 		struct IS_KEYBOARD_RKT_DATA data;
 		const int cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
