@@ -18,7 +18,7 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.42"
+#define VERSION_INFO   "1.5"
 #define MAX_N           1'000
 #define MIN_N           1
 #define DEFAULT_N       50
@@ -67,6 +67,7 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p);
 void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r);
 bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
 void UpdateN(int argc, const char* argv[]);
+void PrintError(string msg);
 
 //
 // global data
@@ -89,9 +90,11 @@ int main(int argc, const char* argv[])
 
     unique_file_descriptor file = open(deviceName.c_str(), O_RDONLY);
     if ( file.IsInvalid() ) {
-        cout << "Could not open device: " << deviceName << endl;
-        cout << "Error: " << strerror(errno) << endl;
-        cout << "Have you checked that device exist?" << endl;
+        stringstream ss;
+        ss << "Could not open device: " << deviceName << endl;
+        ss << "Error: " << strerror(errno) << endl;
+        ss << "Have you checked that device exist?" << endl;
+        PrintError(ss.str());
         return EXIT_FAILURE;
     }
 
@@ -104,7 +107,9 @@ int main(int argc, const char* argv[])
     {    
         auto size = read(file, static_cast<void*>(&data), sizeof(IS_KEYBOARD_RKT_DATA));
         if ( size != sizeof(IS_KEYBOARD_RKT_DATA) ) {
-            cout << "Not able to read from " << deviceName << endl;
+            stringstream ss;
+            ss << "Not able to read from " << deviceName << endl;
+            PrintError(ss.str());
             return EXIT_FAILURE;
         }
 
@@ -115,6 +120,17 @@ int main(int argc, const char* argv[])
     PrintData(&data);
 
     PrintConclusion(&result);
+}
+
+//
+// Function: PrintError
+//
+// (i): prints error message to stdout
+//
+void PrintError(string msg)
+{
+    cout << std::left << setw(36) << setfill('#') << "## ERROR ##" << endl;
+    cout << msg;
 }
 
 //
@@ -182,7 +198,7 @@ void UpdateN(int argc, const char* argv[])
 void PrintHeader()
 {
     cout << setw(80) << setfill('#') << std::left << "#" << endl;
-    cout << setw(80) << setfill('#') << std::left << "## Is Keyboard Rootkitted App " << endl;
+    cout << setw(80) << setfill(' ') << std::left << "## Is Keyboard Rootkitted App " << endl;
     cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
     cout << "## Version : " << VERSION_INFO << endl;
     //cout << "## Usage   : " << endl;
