@@ -232,7 +232,7 @@ static int __init is_kbd_rtk_init(void)
 	char_class->devnode = iskbdrkt_devnode;
 
     //
-	// register device deriver
+	// register device driver
 	//
     char_device = device_create(char_class, NULL, MKDEV(major_num, 0), NULL, DEVICE_NAME);
     if (IS_ERR(char_device)){
