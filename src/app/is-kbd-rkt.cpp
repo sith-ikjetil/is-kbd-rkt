@@ -154,7 +154,7 @@ void PrintError(string msg)
 }
 
 //
-// Function: GetIsArg
+// Function: GetHasArg
 //
 // (i): Gets bool true if we have the argument. false otherwise.
 //
@@ -365,7 +365,7 @@ void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r) {
         bSmiHandlerFound = true;
     }
     if (r->bHitIoApicIRQ1) {
-        cout << "I/O APIC - IRQ 1 - DELMOD-bit SMI SET" << endl;
+        cout << "Keyboard Is Trapped by SMI Handler on I/O APIC IRQ1. DELMOD-bit SMI SET." << endl;
         bSmiHandlerFound = true;
     }
 
