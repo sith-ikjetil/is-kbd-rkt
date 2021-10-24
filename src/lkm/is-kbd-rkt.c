@@ -202,7 +202,8 @@ static char *iskbdrkt_devnode(struct device *dev, umode_t *mode)
 	if (!mode)
 		return NULL;
 	
-	*mode = 0664;//444;
+	// *mode must be 0664 for depmod to work. 2021-10-24
+	*mode = 0664;
 	
 	return NULL;
 }
