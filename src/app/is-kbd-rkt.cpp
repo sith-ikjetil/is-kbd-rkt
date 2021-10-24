@@ -2,7 +2,7 @@
 //: Filename    : is-kbd-rkt.cpp
 //: Date        : 2021-10-18
 //: Author      : "Kjetil Kristoffer Solberg" <post@ikjetil.no>
-//: Version     : 1.6
+//: Version     : 1.7
 //: Description : Application that calls a Linux Kernel Module 
 //:               for detection of an SMM keyboard rootkit.
 //
@@ -19,10 +19,16 @@
 //
 // #define
 //
-#define VERSION_INFO   "1.6"
-#define MAX_N           1'000
-#define MIN_N           1
-#define DEFAULT_N       50
+#define VERSION_INFO        "1.7"
+#define MAX_N               1'000
+#define MIN_N               1
+#define DEFAULT_N           50
+#define DEFAULT_NO_COLOR    false
+//
+// Colors
+//
+#define CLR_GREEN       "\033[32m"
+#define CLR_RESET       "\033[0m"
 
 //
 // using
@@ -72,15 +78,16 @@ typedef struct AppSettings
     int argc;
     const char** argv;
     int n;
+    bool no_color;
 } AppSettings, *LPAppSettings;
 
 //
 // function prototypes
 //
 void PrintHeader(AppSettings& settings);
-void PrintData(IS_KEYBOARD_RKT_DATA* p);
-void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r);
-void PrintError(string msg);
+void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p);
+void PrintConclusion(AppSettings& settings, IS_KEYBOARD_RKT_RESULT* r);
+void PrintError(AppSettings& settings, string msg);
 bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
 void UpdateAppSettings(AppSettings& settings);
 string GetArgVal(string arg, int argc, const char* argv[]);
@@ -97,6 +104,7 @@ int main(int argc, const char* argv[])
         .argc = argc,
         .argv = argv,
         .n = DEFAULT_N,
+        .no_color = DEFAULT_NO_COLOR,
     };
 
     UpdateAppSettings(settings);
@@ -112,7 +120,7 @@ int main(int argc, const char* argv[])
         ss << "Could not open device: " << deviceName << endl;
         ss << "Error: " << strerror(errno) << endl;
         ss << "Have you checked that device exist?" << endl;
-        PrintError(ss.str());
+        PrintError(settings, ss.str());
         return EXIT_FAILURE;
     }
 
@@ -127,7 +135,7 @@ int main(int argc, const char* argv[])
         if ( size != sizeof(IS_KEYBOARD_RKT_DATA) ) {
             stringstream ss;
             ss << "Not able to read from " << deviceName << endl;
-            PrintError(ss.str());
+            PrintError(settings, ss.str());
             return EXIT_FAILURE;
         }
 
@@ -135,9 +143,9 @@ int main(int argc, const char* argv[])
 
     } while ((--n > 0) && !bResult);
  
-    PrintData(&data);
+    PrintData(settings, &data);
 
-    PrintConclusion(&result);
+    PrintConclusion(settings, &result);
 
     return EXIT_SUCCESS;
 }
@@ -147,9 +155,11 @@ int main(int argc, const char* argv[])
 //
 // (i): prints error message to stdout
 //
-void PrintError(string msg)
+void PrintError(AppSettings& settings, string msg)
 {
+    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## ERROR ##" << endl;
+    if (!settings.no_color) { cout << CLR_RESET; }
     cout << msg;
 }
 
@@ -214,6 +224,11 @@ void UpdateAppSettings(AppSettings& settings)
 
         }
     }
+
+    //
+    // no_color
+    //
+    settings.no_color = GetHasArg("--no-color", settings.argc, settings.argv);
 }
 
 //
@@ -221,6 +236,7 @@ void UpdateAppSettings(AppSettings& settings)
 //
 void PrintHeader(AppSettings& settings)
 {
+    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << setw(80) << setfill('#') << std::left << "#" << endl;
     cout << setw(80) << setfill(' ') << std::left << "## Is Keyboard Rootkitted App " << endl;
     cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
@@ -228,18 +244,22 @@ void PrintHeader(AppSettings& settings)
     cout << "## Usage   : " << endl;
     cout << "##           -n " << settings.n << " = Number of times to run the test." << endl;
     cout << "##           (default = 50, max = 1'000, min = 1)" << endl;
+    cout << "##           --no-color = no colored output" << endl;
     cout << "##" << endl;
+    if (!settings.no_color) { cout << CLR_RESET; }
 }
 
 //
 // print driver retrieved data
 //
-void PrintData(IS_KEYBOARD_RKT_DATA* p) 
+void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p) 
 {
     //
     // Base address'
     //
+    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## BASE ADDRESS ##" << endl;
+    if (!settings.no_color) { cout << CLR_RESET; }
     cout << setfill(' ') << setw(16) << std::left << "APIC" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwApicBaseAddress << endl;
     cout << setfill(' ') << setw(16) << std::left << "IO APIC" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwIoApicBaseAddress << endl;
     cout << setfill(' ') << setw(16) << std::left << "Root Complex" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwRootComplexBaseAddress << endl;
@@ -247,7 +267,9 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
     //
     // IOTRn
     //
+    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## IOTRn ##" << endl;
+    if (!settings.no_color) { cout << CLR_RESET; }
     cout << setfill(' ') << setw(16) << std::left << "IOTR0" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[0] << ((p->qwIOTRn[0] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
     cout << setfill(' ') << setw(16) << std::left << "IOTR1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[1] << ((p->qwIOTRn[1] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
     cout << setfill(' ') << setw(16) << std::left << "IOTR2" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[2] << ((p->qwIOTRn[2] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
@@ -256,11 +278,13 @@ void PrintData(IS_KEYBOARD_RKT_DATA* p)
     //
     // IOAPIC_IRQn
     //
+    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;    
+    if (!settings.no_color) { cout << CLR_RESET; }
     cout << setfill(' ') <<setw(16) << std::left << "IO APIC IRQ1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOAPIC_REDTBL[1] << (((p->qwIOAPIC_REDTBL[1] & 0b1'0000'0000'0000'0000) == 0) ? " Interrupt Mask-bit NOT SET" : " Interrupt Mask-bit SET") << endl;
 
     if ( strnlen(p->szErrorMessage, MAX_STRING_BUFFER_SIZE) > 0 ) {
-        cout << std::left << setw(36) << setfill('#') << "## ERROR MESSAGE ##" << endl;    
+        cout << CLR_RESET << CLR_GREEN  << std::left << setw(36) << setfill('#') << "## ERROR MESSAGE ##" << CLR_RESET << endl;    
         cout << p->szErrorMessage << endl;
     }
 }
@@ -344,8 +368,10 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
 //
 // (i): Print conclution from result.
 //
-void PrintConclusion(IS_KEYBOARD_RKT_RESULT* r) {
+void PrintConclusion(AppSettings& settings, IS_KEYBOARD_RKT_RESULT* r) {
+    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## CONCLUSION ##" << endl;
+    if (!settings.no_color) { cout << CLR_RESET; }
 
     bool bSmiHandlerFound(false);
     if (r->bHitIOTR0) {
