@@ -202,7 +202,7 @@ static char *iskbdrkt_devnode(struct device *dev, umode_t *mode)
 	if (!mode)
 		return NULL;
 	
-	*mode = 0444;
+	*mode = 0664;//444;
 	
 	return NULL;
 }
