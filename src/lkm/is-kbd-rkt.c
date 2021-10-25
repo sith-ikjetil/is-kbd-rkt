@@ -63,17 +63,12 @@ static ssize_t device_read(struct file *f, char *buffer, size_t len, loff_t *off
 		struct IS_KEYBOARD_RKT_DATA data;
 		const int cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
 		char* ptr = (char*)&data;
-		int i = 0;
 
 		gather_data(&data);
 
-		for ( i = 0; i < cbSize; i++ )
-		{
-			put_user(*ptr, (char*)(buffer+i));
-			ptr++;
+		if (copy_to_user(buffer, ptr, cbSize) == 0 ) {
+			return cbSize;
 		}
-
-		return cbSize;
 	}
 
     return 0;
