@@ -253,8 +253,9 @@ void PrintHeader(AppSettings& settings)
     cout << "## Version : " << VERSION_INFO << endl;
     cout << "## Usage   : " << endl;
     cout << "##           -n " << settings.n << " = Number of times to run the test." << endl;
-    cout << "##           (default = 50, max = 1'000, min = 1)" << endl;
-    cout << "##           --no-color = no colored output" << endl;
+    cout << "##              (default = 50, max = 1'000, min = 1)" << endl;
+    cout << "##           --no-color    = no colored output" << endl;
+    cout << "##           --result-only = only output the conclusion result" << endl;
     cout << "##" << endl;
     if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
 }
