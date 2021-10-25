@@ -24,6 +24,7 @@
 #define MIN_N               1
 #define DEFAULT_N           50
 #define DEFAULT_NO_COLOR    false
+#define DEFAULT_RESULT_ONLY false
 #define CLR_GREEN           "\033[32m"
 #define CLR_WHITE           "\033[37;1m"
 #define CLR_RESET           "\033[0m"
@@ -77,6 +78,7 @@ typedef struct AppSettings
     const char** argv;
     int n;
     bool no_color;
+    bool result_only;
 } AppSettings, *LPAppSettings;
 
 //
@@ -103,6 +105,7 @@ int main(int argc, const char* argv[])
         .argv = argv,
         .n = DEFAULT_N,
         .no_color = DEFAULT_NO_COLOR,
+        .result_only = DEFAULT_RESULT_ONLY,
     };
 
     UpdateAppSettings(settings);
@@ -227,6 +230,11 @@ void UpdateAppSettings(AppSettings& settings)
     // no_color
     //
     settings.no_color = GetHasArg("--no-color", settings.argc, settings.argv);
+
+    //
+    // result_only
+    //
+    settings.result_only = GetHasArg("--result-only", settings.argc, settings.argv);
 }
 
 //
@@ -234,6 +242,10 @@ void UpdateAppSettings(AppSettings& settings)
 //
 void PrintHeader(AppSettings& settings)
 {
+    if (settings.result_only) {
+        return;
+    }
+
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << setw(80) << setfill('#') << std::left << "#" << endl;
     cout << setw(80) << setfill(' ') << std::left << "## Is Keyboard Rootkitted App " << endl;
@@ -252,6 +264,10 @@ void PrintHeader(AppSettings& settings)
 //
 void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p) 
 {
+    if (settings.result_only) {
+        return;
+    }
+
     //
     // Base address'
     //
@@ -369,9 +385,11 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
 // (i): Print conclution from result.
 //
 void PrintConclusion(AppSettings& settings, IS_KEYBOARD_RKT_RESULT* r) {
-    if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
-    cout << std::left << setw(36) << setfill('#') << "## CONCLUSION ##" << endl;
-    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
+    if (!settings.result_only) {    
+        if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
+        cout << std::left << setw(36) << setfill('#') << "## CONCLUSION ##" << endl;
+        if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
+    }
 
     bool bSmiHandlerFound(false);
     if (r->bHitIOTR0) {
