@@ -24,11 +24,8 @@
 #define MIN_N               1
 #define DEFAULT_N           50
 #define DEFAULT_NO_COLOR    false
-//
-// Colors
-//
-#define CLR_GREEN       "\033[32m"
-#define CLR_RESET       "\033[0m"
+#define CLR_GREEN           "\033[32m"
+#define CLR_RESET           "\033[0m"
 
 //
 // using
