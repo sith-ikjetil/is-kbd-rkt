@@ -25,6 +25,7 @@
 #define DEFAULT_N           50
 #define DEFAULT_NO_COLOR    false
 #define CLR_GREEN           "\033[32m"
+#define CLR_WHITE           "\033[37;1m"
 #define CLR_RESET           "\033[0m"
 
 //
@@ -156,7 +157,7 @@ void PrintError(AppSettings& settings, string msg)
 {
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## ERROR ##" << endl;
-    if (!settings.no_color) { cout << CLR_RESET; }
+    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     cout << msg;
 }
 
@@ -243,7 +244,7 @@ void PrintHeader(AppSettings& settings)
     cout << "##           (default = 50, max = 1'000, min = 1)" << endl;
     cout << "##           --no-color = no colored output" << endl;
     cout << "##" << endl;
-    if (!settings.no_color) { cout << CLR_RESET; }
+    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
 }
 
 //
@@ -256,7 +257,7 @@ void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p)
     //
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## BASE ADDRESS ##" << endl;
-    if (!settings.no_color) { cout << CLR_RESET; }
+    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     cout << setfill(' ') << setw(16) << std::left << "APIC" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwApicBaseAddress << endl;
     cout << setfill(' ') << setw(16) << std::left << "IO APIC" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwIoApicBaseAddress << endl;
     cout << setfill(' ') << setw(16) << std::left << "Root Complex" << ": 0x" << std::right << setw(8) << setfill('0') << std::hex << p->dwRootComplexBaseAddress << endl;
@@ -266,7 +267,7 @@ void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p)
     //
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## IOTRn ##" << endl;
-    if (!settings.no_color) { cout << CLR_RESET; }
+    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     cout << setfill(' ') << setw(16) << std::left << "IOTR0" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[0] << ((p->qwIOTRn[0] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
     cout << setfill(' ') << setw(16) << std::left << "IOTR1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[1] << ((p->qwIOTRn[1] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
     cout << setfill(' ') << setw(16) << std::left << "IOTR2" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOTRn[2] << ((p->qwIOTRn[2] & 1) ? " TRSE-bit SET" : " TRSE-bit NOT SET") << endl;
@@ -277,12 +278,14 @@ void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p)
     //
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;    
-    if (!settings.no_color) { cout << CLR_RESET; }
+    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     cout << setfill(' ') <<setw(16) << std::left << "IO APIC IRQ1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOAPIC_REDTBL[1] << (((p->qwIOAPIC_REDTBL[1] & 0b1'0000'0000'0000'0000) == 0) ? " Interrupt Mask-bit NOT SET" : " Interrupt Mask-bit SET") << endl;
 
     if ( strnlen(p->szErrorMessage, MAX_STRING_BUFFER_SIZE) > 0 ) {
-        cout << CLR_RESET << CLR_GREEN  << std::left << setw(36) << setfill('#') << "## ERROR MESSAGE ##" << CLR_RESET << endl;    
+        if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
+        cout << std::left << setw(36) << setfill('#') << "## ERROR MESSAGE ##" << CLR_RESET << endl;    
         cout << p->szErrorMessage << endl;
+        if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     }
 }
 
@@ -368,7 +371,7 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
 void PrintConclusion(AppSettings& settings, IS_KEYBOARD_RKT_RESULT* r) {
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
     cout << std::left << setw(36) << setfill('#') << "## CONCLUSION ##" << endl;
-    if (!settings.no_color) { cout << CLR_RESET; }
+    if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
 
     bool bSmiHandlerFound(false);
     if (r->bHitIOTR0) {
