@@ -119,7 +119,7 @@ int main(int argc, const char* argv[])
     if ( file.IsInvalid() ) {
         stringstream ss;
         ss << "Could not open device: " << deviceName << endl;
-        ss << "Error: " << strerror(errno) << endl;
+        ss << "Error message: " << strerror(errno) << endl;
         ss << "Have you installed the Linux Kernel Driver?" << endl;
         PrintError(settings, ss.str());
         return EXIT_FAILURE;
@@ -211,7 +211,7 @@ void UpdateAppSettings(AppSettings& settings)
     if ( newN.size() > 0 ) {
         try
         {
-            int nn = ItsConvert::ToNumber<int>(ItsString::Replace(newN, "'", ""));
+            int nn = ItsConvert::ToNumber<int>(newN);
             if (nn > MAX_N ) {
                 nn = MAX_N;
             }
@@ -253,7 +253,7 @@ void PrintHeader(AppSettings& settings)
     cout << "## Version : " << VERSION_INFO << endl;
     cout << "## Usage   : " << endl;
     cout << "##           -n " << settings.n << " = Number of times to run the test." << endl;
-    cout << "##              (default = 50, max = 1'000, min = 1)" << endl;
+    cout << "##              (default = 50, max = 1000, min = 1)" << endl;
     cout << "##           --no-color    = no colored output" << endl;
     cout << "##           --result-only = only output the conclusion result" << endl;
     cout << "##" << endl;
