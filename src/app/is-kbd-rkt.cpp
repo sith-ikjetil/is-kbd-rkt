@@ -120,7 +120,7 @@ int main(int argc, const char* argv[])
         stringstream ss;
         ss << "Could not open device: " << deviceName << endl;
         ss << "Error: " << strerror(errno) << endl;
-        ss << "Have you checked that device exist?" << endl;
+        ss << "Have you installed the Linux Kernel Driver?" << endl;
         PrintError(settings, ss.str());
         return EXIT_FAILURE;
     }
