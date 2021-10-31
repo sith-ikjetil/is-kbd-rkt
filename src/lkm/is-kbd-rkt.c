@@ -8,8 +8,6 @@
 /*
  * #include
  */
-#include "../include/is-kbd-rkt.h"
-#include "../include/is-kbd-rkt-data.h"
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -19,6 +17,19 @@
 #include <linux/pci.h>
 #include <linux/string.h>
 #include <asm/msr.h>
+#include <linux/proc_fs.h>
+#include <linux/stddef.h>
+#include "../include/is-kbd-rkt.h"
+#include "../include/is-kbd-rkt-data.h"
+
+/*
+ * #define
+ */
+#define INTEL_LPC_RCBA_REG 	0xF0
+#define PROC_FILENAME		"is_kbd_rkt"
+#define PROC_MAX_SIZE		4096
+#define MAX_BUFFER_SIZE	 	255
+#define VERSION_NO			"1.5"
 
 /*
  * module metadata
@@ -26,12 +37,7 @@
 MODULE_AUTHOR("Kjetil Kristoffer Solberg <post@ikjetil.no>");
 MODULE_DESCRIPTION("Linux Kernel Module for detecting SMM keyboard rootkit");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.4");
-
-/*
- * #define
- */
-#define INTEL_LPC_RCBA_REG 0xF0
+MODULE_VERSION(VERSION_NO);
 
 /*
  * function prototypes
@@ -41,6 +47,9 @@ static u32 get_rcba(void);
 static u64 get_apicba(void);
 static void gather_data(IS_KEYBOARD_RKT_DATA* p);
 static char *iskbdrkt_devnode(struct device *dev, umode_t *mode);
+static ssize_t proc_read(struct file *, char __user *, size_t, loff_t *);
+static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* data);
+static bool process_result(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
 
 /*
  * static variables
@@ -48,6 +57,8 @@ static char *iskbdrkt_devnode(struct device *dev, umode_t *mode);
 static int major_num;
 static struct class* char_class = NULL;
 static struct device* char_device = NULL;
+static struct proc_dir_entry *proc_entry = NULL;
+static bool has_rendered = false;
 
 /*
  * device_read
@@ -72,6 +83,201 @@ static ssize_t device_read(struct file *f, char *buffer, size_t len, loff_t *off
 	}
 
     return 0;
+}
+
+/*
+ * read_proc_Info
+ * proc file information read
+ */
+static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t *offset)
+{
+	if ( buffer == NULL ) {
+		return 0;
+	}
+
+	if (has_rendered) {
+		return 0;
+	}
+
+	{
+		struct IS_KEYBOARD_RKT_DATA rkt_data;
+		int len = 0;
+		char* source = kmalloc(PROC_MAX_SIZE, GFP_KERNEL);
+	
+		if ( source == NULL ) {
+			return 0;
+		}
+
+		gather_data(&rkt_data);
+
+		memset(source, 0, PROC_MAX_SIZE);
+
+		build_proc_info(source, PROC_MAX_SIZE, &rkt_data);
+
+		len = strlen(source);
+		if (copy_to_user(buffer, source, len) == 0 ) {
+			kfree(source);
+			has_rendered = true;
+			return len;
+		}
+		kfree(source);
+	}
+
+	return 0;
+}
+
+/*
+ * build_proc_info
+ * builds proc file contents
+ */
+static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* data)
+{
+	strcat(source, "##\n");
+	strcat(source, "## Is Keyboard Rootkitted\n");
+	strcat(source, "## Version : "); strcat(source, VERSION_NO); strcat(source, "\n");
+	strcat(source, "## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>\n");
+	strcat(source, "##\n");
+
+	if (strlen(data->szErrorMessage) > 0) {
+		strcat(source, "## ERROR ###########################\n");
+		strcat(source, data->szErrorMessage);
+		return;
+	}
+
+	{
+		IS_KEYBOARD_RKT_RESULT result;
+		char buffer[MAX_BUFFER_SIZE];
+		bool bSmiHandlerFound = false;
+		memset(buffer,0,MAX_BUFFER_SIZE);
+		memset(&result,0, sizeof(IS_KEYBOARD_RKT_RESULT));
+		
+		strcat(source, "## BASE ADDRESS ####################\n");
+		sprintf(buffer, "APIC           : 0x%08x\n", data->dwApicBaseAddress);
+		strcat(source, buffer);
+		sprintf(buffer, "IO APIC        : 0x%08x\n", data->dwIoApicBaseAddress);
+		strcat(source, buffer);
+		sprintf(buffer, "Root Complex   : 0x%08x\n", data->dwRootComplexBaseAddress);
+		strcat(source, buffer);
+
+		strcat(source, "## IOTRn ###########################\n");
+		sprintf(buffer, "IOTR0          : 0x%016llx\n", data->qwIOTRn[0]);
+		strcat(source, buffer);
+		sprintf(buffer, "IOTR1          : 0x%016llx\n", data->qwIOTRn[1]);
+		strcat(source, buffer);
+		sprintf(buffer, "IOTR2          : 0x%016llx\n", data->qwIOTRn[2]);
+		strcat(source, buffer);
+		sprintf(buffer, "IOTR3          : 0x%016llx\n", data->qwIOTRn[3]);
+		strcat(source, buffer);
+
+		strcat(source, "## IOAPIC IRQn #####################\n");
+		sprintf(buffer, "IOAPIC IRQ 1   : 0x%016llx\n", data->qwIOAPIC_REDTBL[1]);
+		strcat(source, buffer);
+
+		strcat(source, "## CONCLUSION ##########################\n");
+		
+		process_result(data,&result);
+				
+		if (result.bHitIOTR0) {
+			sprintf(buffer, "Keyboard Is Trapped by SMI Handler on IOTR0 port 0x%ix\n", result.wHitPortIOTR0);
+			strcat(source, buffer);
+			bSmiHandlerFound = true;
+		}
+		if (result.bHitIOTR1) {
+			sprintf(buffer, "Keyboard Is Trapped by SMI Handler on IOTR1 port  0x%ix\n", result.wHitPortIOTR1);
+			strcat(source, buffer);
+			bSmiHandlerFound = true;
+		}
+		if (result.bHitIOTR2) {
+			sprintf(buffer, "Keyboard Is Trapped by SMI Handler on IOTR2 port  0x%ix\n", result.wHitPortIOTR2);
+			strcat(source, buffer);
+			bSmiHandlerFound = true;
+		}
+		if (result.bHitIOTR3) {
+			sprintf(buffer, "Keyboard Is Trapped by SMI Handler on IOTR3 port  0x%ix\n", result.wHitPortIOTR3);
+			strcat(source, buffer);
+			bSmiHandlerFound = true;
+		}
+		if (result.bHitIoApicIRQ1) {
+			strcat(source, "Keyboard Is Trapped by SMI Handler on I/O APIC IRQ1. DELMOD-bit SMI SET\n");
+			bSmiHandlerFound = true;
+		}
+
+		if (!bSmiHandlerFound) {
+			strcat(source, "No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1\n");
+		}
+	}
+}
+
+/*
+ * process_result
+ */
+bool process_result(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
+{ 
+    // IOTR0
+    if (((uint32_t)p->qwIOTRn[0]) == 0x61)
+    {
+        r->bHitIOTR0 = true;
+        r->wHitPortIOTR0 = 0x60;
+        r->qwHitIOTR0 = p->qwIOTRn[0];
+    }
+
+    if (((uint32_t)p->qwIOTRn[0]) == 0x65)
+    {
+        r->bHitIOTR0 = true;
+        r->wHitPortIOTR0 = 0x64;
+        r->qwHitIOTR0 = p->qwIOTRn[0];
+    }
+
+    // IOTR1
+    if (((uint32_t)p->qwIOTRn[1]) == 0x61)
+    {
+        r->bHitIOTR1 = true;
+        r->wHitPortIOTR1 = 0x60;
+        r->qwHitIOTR1 = p->qwIOTRn[1];
+    }
+
+    if (((uint32_t)p->qwIOTRn[1]) == 0x65)
+    {
+        r->bHitIOTR1 = true;
+        r->wHitPortIOTR1 = 0x64;
+        r->qwHitIOTR1 = p->qwIOTRn[1];
+    }
+
+    // IOTR2
+    if (((uint32_t)p->qwIOTRn[2]) == 0x61)
+    {
+        r->bHitIOTR2 = true;
+        r->wHitPortIOTR2 = 0x60;
+        r->qwHitIOTR2 = p->qwIOTRn[2];
+    }
+
+    if (((uint32_t)p->qwIOTRn[2]) == 0x65)
+    {
+        r->bHitIOTR2 = true;
+        r->wHitPortIOTR2 = 0x64;
+        r->qwHitIOTR2 = p->qwIOTRn[2];
+    }
+
+    // IOTR3
+    if (((uint32_t)p->qwIOTRn[3]) == 0x61)
+    {
+        r->bHitIOTR3 = true;
+        r->wHitPortIOTR3 = 0x60;
+        r->qwHitIOTR3 = p->qwIOTRn[3];
+    }
+
+    if (((uint32_t)p->qwIOTRn[3]) == 0x65)
+    {
+        r->bHitIOTR3 = true;
+        r->wHitPortIOTR3 = 0x64;
+        r->qwHitIOTR3 = p->qwIOTRn[3];
+    }
+
+    if (((p->qwIOAPIC_REDTBL[1] & 0b011100000000) == 0b001000000000)) {
+        r->bHitIoApicIRQ1 = true;
+    }
+
+    return (r->bHitIOTR0 || r->bHitIOTR1 || r->bHitIOTR2 || r->bHitIOTR3 || r->bHitIoApicIRQ1);
 }
 
 /*
@@ -189,6 +395,14 @@ static struct file_operations file_ops = {
 };
 
 /*
+ * file_operations
+ * proc file operations
+ */
+static struct proc_ops proc_file_ops = {
+	.proc_read = proc_read,
+};
+
+/*
  * iskbdrkt_devnode
  * set devnode mode
  */
@@ -244,6 +458,15 @@ static int __init is_kbd_rtk_init(void)
     printk(KERN_INFO DEVICE_NAME ": device class created correctly\n");
     
 	//
+	// create proc file
+	//
+	proc_entry = proc_create(PROC_FILENAME, 0, NULL, &proc_file_ops);
+	if (proc_entry == NULL) {
+		printk(KERN_INFO DEVICE_NAME ": create_proc_entry failed\n");
+	}
+	printk(KERN_INFO DEVICE_NAME ": create_proc_entry succeeded\n");
+
+	//
 	// return success
 	//
 	return 0;
@@ -257,6 +480,9 @@ static void __exit is_kbd_rtk_exit(void)
 	device_destroy(char_class, MKDEV(major_num, 0));
     class_unregister(char_class);
     unregister_chrdev(major_num, DEVICE_NAME);
+	if (proc_entry != NULL) {
+		remove_proc_entry(PROC_FILENAME, NULL);
+	}
     printk(KERN_INFO DEVICE_NAME ": module unloaded\n");
 }
 

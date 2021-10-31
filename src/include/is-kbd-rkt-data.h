@@ -30,6 +30,30 @@ typedef struct IS_KEYBOARD_RKT_DATA {
 } IS_KEYBOARD_RKT_DATA, *PIS_KEYBOARD_RKT_DATA;
 
 //
+// struct: IS_KEYBOARD_RKT_RESULT
+//
+// (i): data collected during ProcessResult function call
+//
+typedef struct IS_KEYBOARD_RKT_RESULT {
+    bool bHitIOTR0;
+    bool bHitIOTR1;
+    bool bHitIOTR2;
+    bool bHitIOTR3;
+
+    unsigned short wHitPortIOTR0;
+    unsigned short wHitPortIOTR1;
+    unsigned short wHitPortIOTR2;
+    unsigned short wHitPortIOTR3;
+
+    bool bHitIoApicIRQ1;
+
+    unsigned long long qwHitIOTR0;
+    unsigned long long qwHitIOTR1;
+    unsigned long long qwHitIOTR2;
+    unsigned long long qwHitIOTR3;
+} IS_KEYBOARD_RKT_RESULT, *PIS_KEYBOARD_RKT_RESULT;
+
+//
 // #endif
 //
 #endif
