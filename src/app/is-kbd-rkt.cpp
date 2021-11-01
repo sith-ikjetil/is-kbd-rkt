@@ -270,7 +270,7 @@ void PrintData(AppSettings& settings, IS_KEYBOARD_RKT_DATA* p)
     // IOAPIC_IRQn
     //
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
-    cout << std::left << setw(36) << setfill('#') << "## IOAPIC_IRQn ##" << endl;    
+    cout << std::left << setw(36) << setfill('#') << "## IOAPIC IRQn ##" << endl;    
     if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     cout << setfill(' ') <<setw(16) << std::left << "IO APIC IRQ1" << ": 0x" << std::right << setw(16) << setfill('0') << std::hex << p->qwIOAPIC_REDTBL[1] << (((p->qwIOAPIC_REDTBL[1] & 0b1'0000'0000'0000'0000) == 0) ? " Interrupt Mask-bit NOT SET" : " Interrupt Mask-bit SET") << endl;
 
