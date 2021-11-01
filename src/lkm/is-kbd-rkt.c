@@ -29,7 +29,7 @@
 #define PROC_FILENAME		"is_kbd_rkt"
 #define PROC_MAX_SIZE		4096
 #define MAX_BUFFER_SIZE	 	255
-#define VERSION_NO			"1.5"
+#define VERSION_NO			"1.6"
 
 /*
  * module metadata
@@ -96,6 +96,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 	}
 
 	if (has_rendered) {
+		has_rendered = false;
 		return 0;
 	}
 
