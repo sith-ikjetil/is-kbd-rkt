@@ -5,10 +5,15 @@ A Linux Kernel Module with "/proc/is_kbd_rkt" file and "iskbdrkt" app for detect
  
 ## Example Output iskbdrkt app
 ```bash
-################################################################################
+##
 ## Is Keyboard Rootkitted App 
 ## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>
-## Version : 1.5
+## Version : 1.7
+## Usage   : 
+##           -n 50 = Number of times to run the test.
+##              (default = 50, max = 1000, min = 1)
+##           --no-color    = no colored output
+##           --result-only = only output the conclusion result
 ##
 ## BASE ADDRESS ####################
 APIC            : 0xfee00800
