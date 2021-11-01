@@ -140,7 +140,7 @@ static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* da
 	strcat(source, "##\n");
 
 	if (strlen(data->szErrorMessage) > 0) {
-		strcat(source, "## ERROR ###########################\n");
+		strcat(source, "## ERROR ##########################\n");
 		strcat(source, data->szErrorMessage);
 		return;
 	}
@@ -152,7 +152,7 @@ static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* da
 		memset(buffer,0,MAX_BUFFER_SIZE);
 		memset(&result,0, sizeof(IS_KEYBOARD_RKT_RESULT));
 		
-		strcat(source, "## BASE ADDRESS ####################\n");
+		strcat(source, "## BASE ADDRESS ###################\n");
 		sprintf(buffer, "APIC           : 0x%08x\n", data->dwApicBaseAddress);
 		strcat(source, buffer);
 		sprintf(buffer, "IO APIC        : 0x%08x\n", data->dwIoApicBaseAddress);
@@ -160,7 +160,7 @@ static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* da
 		sprintf(buffer, "Root Complex   : 0x%08x\n", data->dwRootComplexBaseAddress);
 		strcat(source, buffer);
 
-		strcat(source, "## IOTRn ###########################\n");
+		strcat(source, "## IOTRn ##########################\n");
 		sprintf(buffer, "IOTR0          : 0x%016llx\n", data->qwIOTRn[0]);
 		strcat(source, buffer);
 		sprintf(buffer, "IOTR1          : 0x%016llx\n", data->qwIOTRn[1]);
@@ -170,11 +170,11 @@ static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* da
 		sprintf(buffer, "IOTR3          : 0x%016llx\n", data->qwIOTRn[3]);
 		strcat(source, buffer);
 
-		strcat(source, "## IOAPIC IRQn #####################\n");
+		strcat(source, "## IOAPIC IRQn ####################\n");
 		sprintf(buffer, "IOAPIC IRQ 1   : 0x%016llx\n", data->qwIOAPIC_REDTBL[1]);
 		strcat(source, buffer);
 
-		strcat(source, "## CONCLUSION ######################\n");
+		strcat(source, "## CONCLUSION #####################\n");
 		
 		process_result(data,&result);
 				
