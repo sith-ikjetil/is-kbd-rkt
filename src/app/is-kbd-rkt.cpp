@@ -223,8 +223,8 @@ void PrintHeader(AppSettings& settings)
     }
 
     if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
-    cout << setw(80) << setfill('#') << std::left << "#" << endl;
-    cout << setw(80) << setfill(' ') << std::left << "## Is Keyboard Rootkitted App " << endl;
+    cout << "##" << endl;
+    cout << "## Is Keyboard Rootkitted App " << endl;
     cout << "## Author  : " << "Kjetil Kristoffer Solberg <post@ikjetil.no>" << endl;
     cout << "## Version : " << VERSION_INFO << endl;
     cout << "## Usage   : " << endl;
