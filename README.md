@@ -1,9 +1,9 @@
 # is-kbd-rkt
 License: **GPL-3.0-or-later**  
 
-A Linux Kernel Module with app for detecting SMM keyboard rootkit. 
+A Linux Kernel Module with "/proc/is_kbd_rkt" file and "iskbdrkt" app for detecting SMM keyboard rootkit. 
  
-## Example Output 
+## Example Output iskbdrkt app
 ```bash
 ################################################################################
 ## Is Keyboard Rootkitted App 
@@ -22,6 +22,28 @@ IOTR3           : 0x0000000000000000 TRSE-bit NOT SET
 ## IOAPIC_IRQn #####################
 IO APIC IRQ1    : 0x0000000000010000 Interrupt Mask-bit SET
 ## CONCLUSION ######################
+No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1
+```
+
+## Example Output /proc/is_kbd_rkt file
+```bash
+##
+## Is Keyboard Rootkitted
+## Version : 1.6
+## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>
+##
+## BASE ADDRESS ####################
+APIC           : 0xfee00c00
+IO APIC        : 0xfec00000
+Root Complex   : 0xffffc000
+## IOTRn ###########################
+IOTR0          : 0x80b9ffca83000012
+IOTR1          : 0x00001261e8000003
+IOTR2          : 0xe8ce8b00000320be
+IOTR3          : 0x0200000d00001222
+## IOAPIC IRQn #####################
+IOAPIC IRQ 1   : 0x0000000000010000
+## CONCLUSION ##########################
 No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1
 ```
 
