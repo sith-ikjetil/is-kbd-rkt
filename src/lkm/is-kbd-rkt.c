@@ -174,7 +174,7 @@ static void build_proc_info(char* source, int max_size, IS_KEYBOARD_RKT_DATA* da
 		sprintf(buffer, "IOAPIC IRQ 1   : 0x%016llx\n", data->qwIOAPIC_REDTBL[1]);
 		strcat(source, buffer);
 
-		strcat(source, "## CONCLUSION ##########################\n");
+		strcat(source, "## CONCLUSION ######################\n");
 		
 		process_result(data,&result);
 				
