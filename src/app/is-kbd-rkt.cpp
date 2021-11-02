@@ -42,6 +42,7 @@ using ItSoftware::Linux::ItsConvert;
 using ItSoftware::Linux::ItsString;
 using ItSoftware::Linux::Core::ItsFile;
 using ItSoftware::Linux::Core::unique_file_descriptor;
+using ItSoftware::Linux::Core::ItsError;
 
 //
 // struct: AppSettings
@@ -95,7 +96,7 @@ int main(int argc, const char* argv[])
     if ( file.IsInvalid() ) {
         stringstream ss;
         ss << "Could not open device: " << deviceName << endl;
-        ss << "Error message: " << strerror(errno) << endl;
+        ss << "Error message: " << ItsError::GetLastErrorDescription() << endl;
         ss << "Have you installed the Linux Kernel Driver?" << endl;
         PrintError(settings, ss.str());
         return EXIT_FAILURE;
@@ -112,6 +113,7 @@ int main(int argc, const char* argv[])
         if ( size != sizeof(IS_KEYBOARD_RKT_DATA) ) {
             stringstream ss;
             ss << "Not able to read from " << deviceName << endl;
+            ss << "Error message: " << ItsError::GetLastErrorDescription() << endl;
             PrintError(settings, ss.str());
             return EXIT_FAILURE;
         }
