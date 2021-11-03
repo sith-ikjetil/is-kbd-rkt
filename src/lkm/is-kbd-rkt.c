@@ -101,26 +101,26 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 	}
 
 	{
-		struct IS_KEYBOARD_RKT_DATA rkt_data;
 		int len = 0;
-		char* source = kmalloc(PROC_MAX_SIZE, GFP_KERNEL);
+		IS_KEYBOARD_RKT_DATA* rkt_data = kzalloc(sizeof(IS_KEYBOARD_RKT_DATA), GFP_KERNEL);
+		char* source = kzalloc(PROC_MAX_SIZE, GFP_KERNEL);
 	
 		if ( source == NULL ) {
 			return 0;
 		}
 
-		gather_data(&rkt_data);
+		gather_data(rkt_data);
 
-		memset(source, 0, PROC_MAX_SIZE);
-
-		build_proc_info(source, PROC_MAX_SIZE, &rkt_data);
+		build_proc_info(source, PROC_MAX_SIZE, rkt_data);
 
 		len = strnlen(source, PROC_MAX_SIZE);
 		if (copy_to_user(buffer, source, len) == 0 ) {
+			kfree(rkt_data);
 			kfree(source);
 			has_rendered = true;
 			return len;
 		}
+		kfree(rkt_data);
 		kfree(source);
 	}
 
@@ -146,11 +146,9 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 	}
 
 	{
-		IS_KEYBOARD_RKT_RESULT result;
-		char* buffer = kmalloc(MAX_BUFFER_SIZE,GFP_KERNEL);
+		IS_KEYBOARD_RKT_RESULT* result = kzalloc(sizeof(IS_KEYBOARD_RKT_RESULT), GFP_KERNEL);
+		char* buffer = kzalloc(MAX_BUFFER_SIZE,GFP_KERNEL);
 		bool bSmiHandlerFound = false;
-		memset(buffer,0,MAX_BUFFER_SIZE);
-		memset(&result,0, sizeof(IS_KEYBOARD_RKT_RESULT));
 		
 		strlcat(source, "## BASE ADDRESS ###################\n", max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "APIC           : 0x%08x\n", data->dwApicBaseAddress);
@@ -176,29 +174,29 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 
 		strlcat(source, "## CONCLUSION #####################\n", max_size);
 		
-		process_result(data,&result);
+		process_result(data,result);
 				
-		if (result.bHitIOTR0) {
-			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR0 port 0x%ix\n", result.wHitPortIOTR0);
+		if (result->bHitIOTR0) {
+			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR0 port 0x%ix\n", result->wHitPortIOTR0);
 			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
-		if (result.bHitIOTR1) {
-			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR1 port  0x%ix\n", result.wHitPortIOTR1);
+		if (result->bHitIOTR1) {
+			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR1 port  0x%ix\n", result->wHitPortIOTR1);
 			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
-		if (result.bHitIOTR2) {
-			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR2 port  0x%ix\n", result.wHitPortIOTR2);
+		if (result->bHitIOTR2) {
+			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR2 port  0x%ix\n", result->wHitPortIOTR2);
 			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
-		if (result.bHitIOTR3) {
-			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR3 port  0x%ix\n", result.wHitPortIOTR3);
+		if (result->bHitIOTR3) {
+			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR3 port  0x%ix\n", result->wHitPortIOTR3);
 			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
-		if (result.bHitIoApicIRQ1) {
+		if (result->bHitIoApicIRQ1) {
 			strlcat(source, "Keyboard Is Trapped by SMI Handler on I/O APIC IRQ1. DELMOD-bit SMI SET\n", max_size);
 			bSmiHandlerFound = true;
 		}
@@ -207,6 +205,7 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 			strlcat(source, "No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1\n", max_size);
 		}
 
+		kfree(result);
 		kfree(buffer);
 	}
 }
