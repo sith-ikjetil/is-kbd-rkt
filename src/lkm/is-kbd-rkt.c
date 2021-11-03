@@ -133,15 +133,15 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
  */
 static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DATA* data)
 {
-	strncat(source, "##\n", max_size);
-	strncat(source, "## Is Keyboard Rootkitted\n", max_size);
-	strncat(source, "## Version : ", max_size); strncat(source, VERSION_NO, max_size); strncat(source, "\n", max_size);
-	strncat(source, "## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>\n", max_size);
-	strncat(source, "##\n", max_size);
+	strlcat(source, "##\n", max_size);
+	strlcat(source, "## Is Keyboard Rootkitted\n", max_size);
+	strlcat(source, "## Version : ", max_size); strlcat(source, VERSION_NO, max_size); strlcat(source, "\n", max_size);
+	strlcat(source, "## Author  : Kjetil Kristoffer Solberg <post@ikjetil.no>\n", max_size);
+	strlcat(source, "##\n", max_size);
 
-	if (strlen(data->szErrorMessage) > 0) {
-		strncat(source, "## ERROR ##########################\n", max_size);
-		strncat(source, data->szErrorMessage, max_size);
+	if (strnlen(data->szErrorMessage, MAX_STRING_BUFFER_SIZE) > 0) {
+		strlcat(source, "## ERROR ##########################\n", max_size);
+		strlcat(source, data->szErrorMessage, max_size);
 		return;
 	}
 
@@ -152,59 +152,59 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 		memset(buffer,0,MAX_BUFFER_SIZE);
 		memset(&result,0, sizeof(IS_KEYBOARD_RKT_RESULT));
 		
-		strncat(source, "## BASE ADDRESS ###################\n", max_size);
+		strlcat(source, "## BASE ADDRESS ###################\n", max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "APIC           : 0x%08x\n", data->dwApicBaseAddress);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "IO APIC        : 0x%08x\n", data->dwIoApicBaseAddress);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "Root Complex   : 0x%08x\n", data->dwRootComplexBaseAddress);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 
-		strncat(source, "## IOTRn ##########################\n", max_size);
+		strlcat(source, "## IOTRn ##########################\n", max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR0          : 0x%016llx\n", data->qwIOTRn[0]);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR1          : 0x%016llx\n", data->qwIOTRn[1]);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR2          : 0x%016llx\n", data->qwIOTRn[2]);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR3          : 0x%016llx\n", data->qwIOTRn[3]);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 
-		strncat(source, "## IOAPIC IRQn ####################\n", max_size);
+		strlcat(source, "## IOAPIC IRQn ####################\n", max_size);
 		snprintf(buffer, MAX_BUFFER_SIZE, "IOAPIC IRQ 1   : 0x%016llx\n", data->qwIOAPIC_REDTBL[1]);
-		strncat(source, buffer, max_size);
+		strlcat(source, buffer, max_size);
 
-		strncat(source, "## CONCLUSION #####################\n", max_size);
+		strlcat(source, "## CONCLUSION #####################\n", max_size);
 		
 		process_result(data,&result);
 				
 		if (result.bHitIOTR0) {
 			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR0 port 0x%ix\n", result.wHitPortIOTR0);
-			strncat(source, buffer, max_size);
+			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
 		if (result.bHitIOTR1) {
 			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR1 port  0x%ix\n", result.wHitPortIOTR1);
-			strncat(source, buffer, max_size);
+			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
 		if (result.bHitIOTR2) {
 			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR2 port  0x%ix\n", result.wHitPortIOTR2);
-			strncat(source, buffer, max_size);
+			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
 		if (result.bHitIOTR3) {
 			snprintf(buffer, MAX_BUFFER_SIZE, "Keyboard Is Trapped by SMI Handler on IOTR3 port  0x%ix\n", result.wHitPortIOTR3);
-			strncat(source, buffer, max_size);
+			strlcat(source, buffer, max_size);
 			bSmiHandlerFound = true;
 		}
 		if (result.bHitIoApicIRQ1) {
-			strncat(source, "Keyboard Is Trapped by SMI Handler on I/O APIC IRQ1. DELMOD-bit SMI SET\n", max_size);
+			strlcat(source, "Keyboard Is Trapped by SMI Handler on I/O APIC IRQ1. DELMOD-bit SMI SET\n", max_size);
 			bSmiHandlerFound = true;
 		}
 
 		if (!bSmiHandlerFound) {
-			strncat(source, "No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1\n", max_size);
+			strlcat(source, "No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1\n", max_size);
 		}
 
 		kfree(buffer);
