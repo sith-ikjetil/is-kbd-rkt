@@ -125,7 +125,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 			has_rendered = true;
 			return len;
 		}
-		kfree(rkt_data);
+		kmem_cache_free(kmem_cache_data, rkt_data);
 		kfree(source);
 	}
 
@@ -210,7 +210,7 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 			strlcat(source, "No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1\n", max_size);
 		}
 
-		kfree(result);
+		kmem_cache_free(kmem_cache_result, result);
 		kfree(buffer);
 	}
 }
