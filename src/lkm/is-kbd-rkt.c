@@ -105,7 +105,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 		IS_KEYBOARD_RKT_DATA* rkt_data = kzalloc(sizeof(IS_KEYBOARD_RKT_DATA), GFP_KERNEL);
 		char* source = kzalloc(PROC_MAX_SIZE, GFP_KERNEL);
 	
-		if ( source == NULL ) {
+		if (source == NULL || rkt_data == NULL) {
 			return 0;
 		}
 
@@ -114,7 +114,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 		build_proc_info(source, PROC_MAX_SIZE, rkt_data);
 
 		len = strnlen(source, PROC_MAX_SIZE);
-		if (copy_to_user(buffer, source, len) == 0 ) {
+		if (copy_to_user(buffer, source, len) == 0) {
 			kfree(rkt_data);
 			kfree(source);
 			has_rendered = true;
