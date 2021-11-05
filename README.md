@@ -1,7 +1,7 @@
 # is-kbd-rkt
 License: **GPL-3.0-or-later**  
 
-A Linux Kernel Module with "/proc/is_kbd_rkt" file and "iskbdrkt" app for detecting SMM keyboard rootkit. 
+A Linux Kernel Module with "/proc/is-kbd-rkt" file and "iskbdrkt" app for detecting SMM keyboard rootkit. 
  
 ## Example Output iskbdrkt app
 ```bash
@@ -30,7 +30,7 @@ IO APIC IRQ1    : 0x0000000000010000 Interrupt Mask-bit SET
 No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1
 ```
 
-## Example Output /proc/is_kbd_rkt file
+## Example Output /proc/is-kbd-rkt file
 ```bash
 ##
 ## Is Keyboard Rootkitted
