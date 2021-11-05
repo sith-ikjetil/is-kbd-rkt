@@ -479,20 +479,20 @@ static int __init is_kbd_rtk_init(void)
 	//
 	kmem_cache_data = kmem_cache_create("is_keyboard_rkt_data", sizeof(struct IS_KEYBOARD_RKT_DATA), 0, SLAB_PANIC, data_ctor);
 	if (kmem_cache_data == NULL) {
-		printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_data failed\n");
+		printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_data failed\n");
 		return PTR_ERR(kmem_cache_data);
 	}
-	printk(KERN_INFO DEVICE_NAME ": slab create_proc_entry succeeded\n");
+	printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_data succeeded\n");
 
 	//
 	// create IS_KEYBOARD_RKT_RESULT slab cache
 	//
 	kmem_cache_result = kmem_cache_create("is_keyboard_rkt_result", sizeof(struct IS_KEYBOARD_RKT_RESULT), 0, SLAB_PANIC, result_ctor);
 	if (kmem_cache_result == NULL) {
-		printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_result failed\n");
+		printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_result failed\n");
 		return PTR_ERR(kmem_cache_result);
 	}
-	printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_result succeeded\n");
+	printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_result succeeded\n");
 
 	//
 	// return success
