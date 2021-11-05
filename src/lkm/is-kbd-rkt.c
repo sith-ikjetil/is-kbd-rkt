@@ -27,7 +27,7 @@
  * #define
  */
 #define INTEL_LPC_RCBA_REG 	0xF0
-#define PROC_FILENAME		"is_kbd_rkt"
+#define PROC_FILENAME		"is-kbd-rkt"
 #define PROC_MAX_SIZE		4096
 #define MAX_BUFFER_SIZE	 	255
 #define VERSION_NO			"1.6"
