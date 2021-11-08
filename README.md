@@ -31,7 +31,7 @@ No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1
 ```
 
 ## Example Output /proc/is-kbd-rkt file
-```bash
+```text
 ##
 ## Is Keyboard Rootkitted
 ## Version : 1.6
