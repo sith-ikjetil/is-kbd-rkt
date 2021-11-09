@@ -2,7 +2,7 @@
  *: Filename    : is-kbd-rkt.c
  *: Date        : 2021-10-18
  *: Author      : "Kjetil Kristoffer Solberg" <post@ikjetil.no>
- *: Version     : 1.2
+ *: Version     : 1.6
  *: Description : A Linux Kernel Module that produces output that detects an SMM keyboard rootkit.
 */
 /*
@@ -76,15 +76,18 @@ static ssize_t device_read(struct file *f, char *buffer, size_t len, loff_t *off
 	}
 
 	if (len == sizeof(IS_KEYBOARD_RKT_DATA)) {
-		struct IS_KEYBOARD_RKT_DATA data;
-		const int cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
-		char* ptr = (char*)&data;
+		IS_KEYBOARD_RKT_DATA* data = kmem_cache_alloc(kmem_cache_data,GFP_KERNEL);
+		ssize_t cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
+		char* ptr = (char*)data;
 
-		gather_data(&data);
+		gather_data(data);
 
 		if (copy_to_user(buffer, ptr, cbSize) == 0 ) {
+			kmem_cache_free(kmem_cache_data, data);
 			return cbSize;
 		}
+
+		kmem_cache_free(kmem_cache_data, data);
 	}
 
     return 0;
@@ -107,7 +110,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 
 	{
 		int len = 0;
-		IS_KEYBOARD_RKT_DATA* rkt_data = kmem_cache_alloc(kmem_cache_data,GFP_KERNEL);//kzalloc(sizeof(IS_KEYBOARD_RKT_DATA), GFP_KERNEL);
+		IS_KEYBOARD_RKT_DATA* rkt_data = kmem_cache_alloc(kmem_cache_data,GFP_KERNEL);
 		char* source = kzalloc(PROC_MAX_SIZE, GFP_KERNEL);
 	
 		if (source == NULL || rkt_data == NULL) {
@@ -120,7 +123,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 
 		len = strnlen(source, PROC_MAX_SIZE);
 		if (copy_to_user(buffer, source, len) == 0) {
-			kfree(rkt_data);
+			kmem_cache_free(kmem_cache_data, rkt_data);
 			kfree(source);
 			has_rendered = true;
 			return len;
