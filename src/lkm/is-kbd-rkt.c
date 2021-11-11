@@ -497,6 +497,8 @@ static int __init is_kbd_rtk_init(void)
 	}
 	printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_result succeeded\n");
 
+	printk(KERN_INFO DEVICE_NAME ": module loaded\n");
+
 	//
 	// return success
 	//
