@@ -62,8 +62,8 @@ static struct class* char_class = NULL;
 static struct device* char_device = NULL;
 static struct proc_dir_entry *proc_entry = NULL;
 static bool has_rendered = false;
-static struct kmem_cache* kmem_cache_data = NULL;
-static struct kmem_cache* kmem_cache_result = NULL;
+static struct kmem_cache* kmem_cache_obj_data = NULL;
+static struct kmem_cache* kmem_cache_obj_result = NULL;
 
 /*
  * device_read
@@ -76,18 +76,18 @@ static ssize_t device_read(struct file *f, char *buffer, size_t len, loff_t *off
 	}
 
 	if (len == sizeof(IS_KEYBOARD_RKT_DATA)) {
-		IS_KEYBOARD_RKT_DATA* data = kmem_cache_alloc(kmem_cache_data,GFP_KERNEL);
+		IS_KEYBOARD_RKT_DATA* data = kmem_cache_alloc(kmem_cache_obj_data,GFP_KERNEL);
 		ssize_t cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
 		char* ptr = (char*)data;
 
 		gather_data(data);
 
 		if (copy_to_user(buffer, ptr, cbSize) == 0 ) {
-			kmem_cache_free(kmem_cache_data, data);
+			kmem_cache_free(kmem_cache_obj_data, data);
 			return cbSize;
 		}
 
-		kmem_cache_free(kmem_cache_data, data);
+		kmem_cache_free(kmem_cache_obj_data, data);
 	}
 
     return 0;
@@ -110,7 +110,7 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 
 	{
 		int len = 0;
-		IS_KEYBOARD_RKT_DATA* rkt_data = kmem_cache_alloc(kmem_cache_data,GFP_KERNEL);
+		IS_KEYBOARD_RKT_DATA* rkt_data = kmem_cache_alloc(kmem_cache_obj_data,GFP_KERNEL);
 		char* source = kzalloc(PROC_MAX_SIZE, GFP_KERNEL);
 	
 		if (source == NULL || rkt_data == NULL) {
@@ -123,12 +123,12 @@ static ssize_t proc_read(struct file *f, char __user *buffer, size_t len, loff_t
 
 		len = strnlen(source, PROC_MAX_SIZE);
 		if (copy_to_user(buffer, source, len) == 0) {
-			kmem_cache_free(kmem_cache_data, rkt_data);
+			kmem_cache_free(kmem_cache_obj_data, rkt_data);
 			kfree(source);
 			has_rendered = true;
 			return len;
 		}
-		kmem_cache_free(kmem_cache_data, rkt_data);
+		kmem_cache_free(kmem_cache_obj_data, rkt_data);
 		kfree(source);
 	}
 
@@ -154,7 +154,7 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 	}
 
 	{
-		IS_KEYBOARD_RKT_RESULT* result = kmem_cache_alloc(kmem_cache_result, GFP_KERNEL);//kzalloc(sizeof(IS_KEYBOARD_RKT_RESULT), GFP_KERNEL);
+		IS_KEYBOARD_RKT_RESULT* result = kmem_cache_alloc(kmem_cache_obj_result, GFP_KERNEL);//kzalloc(sizeof(IS_KEYBOARD_RKT_RESULT), GFP_KERNEL);
 		char* buffer = kzalloc(MAX_BUFFER_SIZE,GFP_KERNEL);
 		bool bSmiHandlerFound = false;
 		
@@ -213,7 +213,7 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 			strlcat(source, "No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1\n", max_size);
 		}
 
-		kmem_cache_free(kmem_cache_result, result);
+		kmem_cache_free(kmem_cache_obj_result, result);
 		kfree(buffer);
 	}
 }
@@ -480,20 +480,20 @@ static int __init is_kbd_rtk_init(void)
 	//
 	// create IS_KEYBOARD_RKT_DATA slab cache
 	//
-	kmem_cache_data = kmem_cache_create("is_keyboard_rkt_data", sizeof(struct IS_KEYBOARD_RKT_DATA), 0, SLAB_PANIC, data_ctor);
-	if (kmem_cache_data == NULL) {
+	kmem_cache_obj_data = kmem_cache_create("is_keyboard_rkt_data", sizeof(struct IS_KEYBOARD_RKT_DATA), 0, SLAB_PANIC, data_ctor);
+	if (kmem_cache_obj_data == NULL) {
 		printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_data failed\n");
-		return PTR_ERR(kmem_cache_data);
+		return PTR_ERR(kmem_cache_obj_data);
 	}
 	printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_data succeeded\n");
 
 	//
 	// create IS_KEYBOARD_RKT_RESULT slab cache
 	//
-	kmem_cache_result = kmem_cache_create("is_keyboard_rkt_result", sizeof(struct IS_KEYBOARD_RKT_RESULT), 0, SLAB_PANIC, result_ctor);
-	if (kmem_cache_result == NULL) {
+	kmem_cache_obj_result = kmem_cache_create("is_keyboard_rkt_result", sizeof(struct IS_KEYBOARD_RKT_RESULT), 0, SLAB_PANIC, result_ctor);
+	if (kmem_cache_obj_result == NULL) {
 		printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_result failed\n");
-		return PTR_ERR(kmem_cache_result);
+		return PTR_ERR(kmem_cache_obj_result);
 	}
 	printk(KERN_INFO DEVICE_NAME ": slab kmem_cache_create is_keyboard_rkt_result succeeded\n");
 
@@ -534,8 +534,8 @@ static void __exit is_kbd_rtk_exit(void)
 	if (proc_entry != NULL) {
 		remove_proc_entry(PROC_FILENAME, NULL);
 	}
-	kmem_cache_destroy(kmem_cache_data);
-	kmem_cache_destroy(kmem_cache_result);
+	kmem_cache_destroy(kmem_cache_obj_data);
+	kmem_cache_destroy(kmem_cache_obj_result);
 
     printk(KERN_INFO DEVICE_NAME ": module unloaded\n");
 }
