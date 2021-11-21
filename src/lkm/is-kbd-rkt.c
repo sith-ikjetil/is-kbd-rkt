@@ -221,7 +221,7 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 /*
  * process_result
  */
-bool process_result(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
+static bool process_result(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
 { 
     // IOTR0
     if (((uint32_t)p->qwIOTRn[0]) == 0x61)
