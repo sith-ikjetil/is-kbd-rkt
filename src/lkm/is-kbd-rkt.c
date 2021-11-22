@@ -309,8 +309,15 @@ _retry:
 			goto _retry;
 		}
 	}
-	
-	rcba &= RCBA_MASK;
+
+	if (rcba & (u32)1) {
+		// if Enable (EN) bit is set
+		rcba &= RCBA_MASK;
+	}
+	else {
+		// if Enable (EN) bit is not set
+		rcba = RCBA_MASK;
+	}
 
 	return rcba;
 }
