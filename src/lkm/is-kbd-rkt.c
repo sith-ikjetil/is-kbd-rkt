@@ -44,7 +44,7 @@ MODULE_VERSION(VERSION_NO);
  * function prototypes
  */
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
-static u32 get_rcba(void);
+static bool get_rcba(u32* rcba);
 static u64 get_apicba(void);
 static void gather_data(IS_KEYBOARD_RKT_DATA* p);
 static char *iskbdrkt_devnode(struct device *dev, umode_t *mode);
@@ -294,32 +294,30 @@ static bool process_result(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
  * get_rcba
  * gets root complex base address
  */
-static u32 get_rcba(void)
+static bool get_rcba(u32* rcba)
 {
 	struct pci_dev *dev = NULL;
-	u32 rcba;
 	
-	rcba = 0;	
+	*rcba = 0;	
 	dev = pci_get_device(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, NULL);
 _retry:
 	if (dev != NULL) {
-		pci_bus_read_config_dword(dev->bus, PCI_DEVFN(31, 0), INTEL_LPC_RCBA_REG, &rcba);
-		if (rcba == 0) {
+		pci_bus_read_config_dword(dev->bus, PCI_DEVFN(31, 0), INTEL_LPC_RCBA_REG, rcba);
+		if (*rcba == 0) {
 			dev = pci_get_device(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, dev);
 			goto _retry;
 		}
 	}
 
-	if (rcba & (u32)1) {
-		// if Enable (EN) bit is set
-		rcba &= RCBA_MASK;
-	}
-	else {
+	if (!(*rcba & (u32)1)) {	
 		// if Enable (EN) bit is not set
-		rcba = RCBA_MASK;
+		return false;
 	}
 
-	return rcba;
+	// if Enable (EN) bit is set
+	*rcba &= RCBA_MASK;
+
+	return true;
 }
 
 /*
@@ -346,18 +344,24 @@ static void gather_data(IS_KEYBOARD_RKT_DATA* p)
 	u32 __iomem *pIOTR2_2;
 	u32 __iomem *pIOTR3_1;
 	u32 __iomem *pIOTR3_2;
-	int i = 0;
-	int irq = 0;
 	u32 __iomem *pApicIoRegSel;
 	u32 __iomem *pApicIoWin;
+	int i = 0;
+	int irq = 0;
+	u32 rcba = 0;
 
 	memset((void*)p, 0, sizeof(IS_KEYBOARD_RKT_DATA));
 	p->cbSize = sizeof(IS_KEYBOARD_RKT_DATA);
 
 	//
 	// RCBA
-	//
-	p->dwRootComplexBaseAddress = get_rcba();
+	// 
+	if ( !get_rcba(&rcba) ) {
+		strscpy(p->szErrorMessage, "BA Range Does Not Have Enable (EN) bit Set", MAX_STRING_BUFFER_SIZE);
+		return;
+	}
+
+	p->dwRootComplexBaseAddress = rcba;
 	if (p->dwRootComplexBaseAddress == 0) {
 		strscpy(p->szErrorMessage, "Invalid Root Complex Base Address", MAX_STRING_BUFFER_SIZE);
 		return;
