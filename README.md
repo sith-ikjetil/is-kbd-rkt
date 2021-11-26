@@ -73,10 +73,12 @@ Build the application in the app directory with build-debug.sh.
 ./build-debug.sh
 ```
 
-Run the application,
+Run the application (app directory),
 ```bash
 ./iskbdrkt
 ```
+
+
 
 You need g++ to build the application. 
 You need linux-headers to build the kernel object. 
