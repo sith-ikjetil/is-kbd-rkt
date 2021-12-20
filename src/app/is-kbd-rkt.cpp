@@ -97,7 +97,7 @@ int main(int argc, const char* argv[])
         stringstream ss;
         ss << "Could not open device: " << deviceName << endl;
         ss << "Error message: " << ItsError::GetLastErrorDescription() << endl;
-        ss << "Have you installed the Linux Kernel Module?" << endl;
+        ss << "Have you installed the Linux Loadable Kernel Module?" << endl;
         PrintError(settings, ss.str());
         return EXIT_FAILURE;
     }
