@@ -52,10 +52,32 @@ IOAPIC IRQ 1   : 0x0000000000010000
 No SMI Handler trapping the keyboard on IOTR0-IOTR3 or IRQ1
 ```
 
-## Details 
+## is-kbd-rkt.ko driver 
 Run make in the lkm directory to build the kernel object.
 ```bash
 make
+```
+
+To create the cryptograhic key first run:
+```bash
+sudo -i
+```
+
+then run:
+```bash
+mkdir /root/module-signing
+cd /root/module-signing
+openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500
+chmod 600 MOK.priv
+mokutil --import /root/module-signing/MOK.der
+openssl rsa -in MOK.priv -out new.MOK.priv
+```
+
+Now in the lkm directory as current directory, execute:
+```bash
+sudo ./sign_ko.sh ./is-kbd-rkt.ko
+sudo ./cp_ko_to_extra.sh ./is-kbd-rkt.ko
+sudo depmod
 ```
 
 Insert the kernel object into the kernel with: 
@@ -68,6 +90,7 @@ When you want to, remove the kernel object from the kernel with:
 sudo rmmod is-kbd-rkt
 ```
 
+## iskbdrkt application
 Build the application in the app directory with build-debug.sh.
 ```bash
 ./build-debug.sh
@@ -77,7 +100,6 @@ Run the application (app directory),
 ```bash
 ./iskbdrkt
 ```
-
 
 
 You need g++ to build the application. 
