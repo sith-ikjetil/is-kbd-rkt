@@ -1,12 +1,11 @@
 #!/bin/bash
 echo "Compiling iskbdrkt..."
-echo "> Using debug build <"
-
-g++ -g -o iskbdrkt is-kbd-rkt.cpp --std=c++17
-
+echo "> using debug build <"
+g++ -ggdb -o iskbdrkt is-kbd-rkt.cpp --std=c++17
 if [[ $? -eq 0 ]] 
 then
-    echo "> Compilation Succeeded <"
+    echo "> iskbdrkt build ok <"
 else
-    echo "> Compilation Failed <"
+    echo "> iskbdrkt build error <"
 fi
+echo "> build process complete <"
