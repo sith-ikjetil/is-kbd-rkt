@@ -17,17 +17,18 @@
 #include <iostream>
 
 //
-// #define
+// constexpr
 //
-#define VERSION_INFO        "1.7"
-#define MAX_N               1'000
-#define MIN_N               1
-#define DEFAULT_N           50
-#define DEFAULT_NO_COLOR    false
-#define DEFAULT_RESULT_ONLY false
-#define CLR_GREEN           "\033[32m"
-#define CLR_WHITE           "\033[37;1m"
-#define CLR_RESET           "\033[0m"
+constexpr auto VERSION_INFO = "1.7";
+constexpr auto MAX_N = 1'000;
+constexpr auto MIN_N = 1;
+constexpr auto DEFAULT_N = 50;
+constexpr auto DEFAULT_NO_COLOR = false;
+constexpr auto DEFAULT_RESULT_ONLY = false;
+constexpr auto CLR_GREEN = "\033[32m";
+constexpr auto CLR_WHITE = "\033[37;1m";
+constexpr auto CLR_RESET = "\033[0m";
+constexpr auto CLR_RED = "\033[31;1m";
 
 //
 // using
@@ -364,8 +365,13 @@ bool ProcessResult(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r)
 // (i): Print conclution from result.
 //
 void PrintConclusion(AppSettings& settings, IS_KEYBOARD_RKT_RESULT* r) {
-    if (!settings.result_only) {    
-        if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
+    if (!settings.result_only) {
+        if (r->bHitIOTR0 || r->bHitIOTR1 || r->bHitIOTR2 || r->bHitIOTR3 || r->bHitIoApicIRQ1) {
+            if (!settings.no_color) { cout << CLR_RESET << CLR_RED; }
+        }
+        else {
+            if (!settings.no_color) { cout << CLR_RESET << CLR_GREEN; }
+        }
         cout << std::left << setw(36) << setfill('#') << "## CONCLUSION ##" << endl;
         if (!settings.no_color) { cout << CLR_RESET << CLR_WHITE; }
     }
