@@ -30,7 +30,7 @@
 #define PROC_FILENAME		"is-kbd-rkt"
 #define PROC_MAX_SIZE		4096
 #define MAX_BUFFER_SIZE	 	255
-#define VERSION_NO			"1.6"
+#define VERSION_NO			"1.7"
 
 /*
  * module metadata
@@ -167,17 +167,17 @@ static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DA
 		strlcat(source, buffer, max_size);
 
 		strlcat(source, "## IOTRn ##########################\n", max_size);
-		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR0          : 0x%016llx\n", data->qwIOTRn[0]);
+		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR0          : 0x%016llx %s\n", data->qwIOTRn[0], ((data->qwIOTRn[0] & 1) ? "TRSE-bit SET" : "TRSE-bit NOT SET"));
 		strlcat(source, buffer, max_size);
-		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR1          : 0x%016llx\n", data->qwIOTRn[1]);
+		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR1          : 0x%016llx %s\n", data->qwIOTRn[1], ((data->qwIOTRn[1] & 1) ? "TRSE-bit SET" : "TRSE-bit NOT SET"));
 		strlcat(source, buffer, max_size);
-		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR2          : 0x%016llx\n", data->qwIOTRn[2]);
+		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR2          : 0x%016llx %s\n", data->qwIOTRn[2], ((data->qwIOTRn[2] & 1) ? "TRSE-bit SET" : "TRSE-bit NOT SET"));
 		strlcat(source, buffer, max_size);
-		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR3          : 0x%016llx\n", data->qwIOTRn[3]);
+		snprintf(buffer, MAX_BUFFER_SIZE, "IOTR3          : 0x%016llx %s\n", data->qwIOTRn[3], ((data->qwIOTRn[3] & 1) ? "TRSE-bit SET" : "TRSE-bit NOT SET"));
 		strlcat(source, buffer, max_size);
 
 		strlcat(source, "## IOAPIC IRQn ####################\n", max_size);
-		snprintf(buffer, MAX_BUFFER_SIZE, "IOAPIC IRQ 1   : 0x%016llx\n", data->qwIOAPIC_REDTBL[1]);
+		snprintf(buffer, MAX_BUFFER_SIZE, "IOAPIC IRQ1    : 0x%016llx %s\n", data->qwIOAPIC_REDTBL[1], (((data->qwIOAPIC_REDTBL[1] & 0b10000000000000000) == 0) ? "Interrupt Mask-bit NOT SET" : "Interrupt Mask-bit SET"));
 		strlcat(source, buffer, max_size);
 
 		strlcat(source, "## CONCLUSION #####################\n", max_size);
