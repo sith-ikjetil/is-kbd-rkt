@@ -47,7 +47,7 @@ static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 static bool get_rcba(u32* rcba);
 static u64 get_apicba(void);
 static void gather_data(IS_KEYBOARD_RKT_DATA* p);
-static char *iskbdrkt_devnode(struct device *dev, umode_t *mode);
+static char *iskbdrkt_devnode(const struct device *dev, umode_t *mode);
 static ssize_t proc_read(struct file *, char __user *, size_t, loff_t *);
 static void build_proc_info(char* source, const int max_size, IS_KEYBOARD_RKT_DATA* data);
 static bool process_result(IS_KEYBOARD_RKT_DATA *p, IS_KEYBOARD_RKT_RESULT *r);
@@ -427,7 +427,7 @@ static struct proc_ops proc_file_ops = {
  * iskbdrkt_devnode
  * set devnode mode
  */
-static char *iskbdrkt_devnode(struct device *dev, umode_t *mode)
+static char *iskbdrkt_devnode(const struct device *dev, umode_t *mode)
 {
 	if (!mode)
 		return NULL;
