@@ -8,13 +8,21 @@ echo "##"
 
 if [[ $# -eq 1 ]] 
 then
+    echo "> Trying Ubuntu <"
     echo "> signing $1 <"
     /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 /root/module-signing/new.MOK.priv /root/module-signing/MOK.der "$1"
     if [[ $? -eq 0 ]]
     then
         echo "> signing complete <"
     else
-        echo "> signing error <"
+        echo "> Trying Fedora <"
+        /usr/src/kernels/$(uname -r)/scripts/sign-file sha256 /root/module-signing/new.MOK.priv /root/module-signing/MOK.der "$1"
+        if [[ $? -eq 0 ]]
+        then
+            echo "> signing complete <"
+        else
+            echo "> signing error <"
+        fi
     fi
 else 
     echo "> wrong number of arguments <"

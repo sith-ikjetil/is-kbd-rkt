@@ -456,7 +456,11 @@ static int __init is_kbd_rtk_init(void)
     //
 	// register device class
 	//
-    char_class = class_create(THIS_MODULE,CLASS_NAME);
+	//#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
+    // 	char_class = class_create(THIS_MODULE,CLASS_NAME);
+	//#else
+		char_class = class_create(CLASS_NAME);
+	//#endif
     if (IS_ERR(char_class)) {
         unregister_chrdev(major_num, DEVICE_NAME);
 		printk(KERN_ALERT DEVICE_NAME ": error registering device class\n");
