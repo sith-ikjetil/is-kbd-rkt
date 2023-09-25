@@ -26,6 +26,7 @@
 /*
  * #define
  */
+//#define LINUX_PRE_6_4		// uncomment if linux kernel pre version 6.4
 #define INTEL_LPC_RCBA_REG 	0xF0
 #define PROC_FILENAME		"is-kbd-rkt"
 #define PROC_MAX_SIZE		4096
@@ -456,11 +457,11 @@ static int __init is_kbd_rtk_init(void)
     //
 	// register device class
 	//
-	//#if LINUX_VERSION_CODE < KERNEL_VERSION(6,4,0)
-    // 	char_class = class_create(THIS_MODULE,CLASS_NAME);
-	//#else
+	#ifdef LINUX_PRE_6_4
+     	char_class = class_create(THIS_MODULE,CLASS_NAME);
+	#else
 		char_class = class_create(CLASS_NAME);
-	//#endif
+	#endif
     if (IS_ERR(char_class)) {
         unregister_chrdev(major_num, DEVICE_NAME);
 		printk(KERN_ALERT DEVICE_NAME ": error registering device class\n");
